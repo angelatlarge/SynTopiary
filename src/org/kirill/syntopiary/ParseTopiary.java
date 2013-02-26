@@ -16,6 +16,7 @@ public class ParseTopiary {
 				String ch = src.substring(idxTokenEnd, idxTokenEnd+1);
 				if (ch.equals("\\")) {
 					src.delete(idxTokenEnd, idxTokenEnd+1);
+					idxTokenEnd++;
 //				} else if (ch.equals("[")) {
 //					// Begin options
 //				} else if (ch.equals("]")) {
@@ -79,7 +80,7 @@ public class ParseTopiary {
 	
 	public static void main(String[] args) {
 		// Test
-		ParseTopiary pt = new ParseTopiary("ABC(XYZ(r(t");
+		ParseTopiary pt = new ParseTopiary("ABC\\(XYZ");
 		System.out.format(">%s<", pt.toString());
 
 	}
