@@ -6,15 +6,19 @@ import org.apache.pivot.wtk.Application;
 import org.apache.pivot.wtk.DesktopApplicationContext;
 import org.apache.pivot.wtk.Display;
 import org.apache.pivot.wtk.Window;
+import org.apache.pivot.wtk.Theme;
  
 public class MainApp implements Application {
-    private Window window = null;
+    private SyntopWindow window = null;
  
     @Override
-    public void startup(Display display, Map<String, String> properties)
-        throws Exception {
+    public void startup(Display display, Map<String, String> properties) throws Exception {
+    	/* TODO: Not sure that skin mapping should go here... */
+        Theme theme = Theme.getTheme();
+        theme.set(TopiaryView.class, TopiaryViewSkin.class);
+    	
         BXMLSerializer bxmlSerializer = new BXMLSerializer();
-        window = (Window)bxmlSerializer.readObject(MainApp.class, "syntop.bxml");
+        window = (SyntopWindow)bxmlSerializer.readObject(MainApp.class, "syntop.bxml");
         window.open(display);
     }
  
@@ -23,7 +27,6 @@ public class MainApp implements Application {
         if (window != null) {
             window.close();
         }
- 
         return false;
     }
  

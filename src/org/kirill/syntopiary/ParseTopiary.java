@@ -1,6 +1,5 @@
 package org.kirill.syntopiary;
 
-import Board;
 
 import java.util.ArrayList;
 import java.util.Iterator;
