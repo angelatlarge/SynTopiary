@@ -36,6 +36,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	final ParseTopiaryNode parseNode;
         private ArrayList<GlyphVector> glyphVectors = null;
         private float textHeight = 0;
+        private float textWidth = 0;
+        private float childrenWidth = 0;
+        private float childrenHeight = 0;
+        private float nodeWidth = 0;
+        private float nodeHeight = 0;
+        
 		protected ArrayList<SkinNode> children = new ArrayList<SkinNode>(); 
     	
     	public SkinNode(TopiaryViewSkin parentSkin, ParseTopiaryNode parseTopiaryNode) {
@@ -46,15 +52,26 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     			children.add(new SkinNode(skin, n));
     	}
     	
+    	/* SkinNode */
         public void layout() {
         	assert(parseNode!=null);
             String text = parseNode.getText();
 	    	System.out.format("SkinNode.layout(). Node text: %s\n", text);
 	    	
+            // Lay out the children
+            childrenWidth = 0;
+            childrenHeight = 0;
+            for (SkinNode childNode : children) {
+            	childNode.layout();
+            	childrenWidth += childNode.nodeWidth;
+            	childrenHeight = Math.max(childrenHeight, childNode.nodeHeight);
+            }
 
+            // Lay out self
             glyphVectors = new ArrayList<GlyphVector>();
             textHeight = 0;
-
+            textWidth = 0;
+            
             if (text != null) {
                 int n = text.length();
 
@@ -64,11 +81,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
                     appendLine(text, 0, text.length(), fontRenderContext);
                 }
             }
-            // Lay out the children
-            for (SkinNode n : children)
-            	n.layout();
+            
+            nodeWidth = Math.max(textHeight, childrenWidth);
+            nodeHeight = textHeight + childrenHeight;
+            
         }
     	
+    	/* SkinNode */
 	    private void appendLine(String text, int start, int end, FontRenderContext fontRenderContext) {
 	        StringCharacterIterator line = new StringCharacterIterator(text, start, end, start);
 	        assert(skin != null);
@@ -78,21 +97,17 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
 	        Rectangle2D textBounds = glyphVector.getLogicalBounds();
 	        textHeight += textBounds.getHeight();
+	        textWidth = (float) Math.max(textWidth, textBounds.getWidth());
 	    }
     	
-	    public void paint(Graphics2D graphics) {
+    	/* SkinNode */
+	    public void paint(Graphics2D graphics, float x, float y) {
         	assert(parseNode!=null);
             String text = parseNode.getText();
 	    	System.out.format("SkinNode.paint(). Node text: %s\n", text);
 
-	        int width = getWidth();
-	        int height = getHeight();
-
-	        // Draw the background
-	        if (backgroundColor != null) {
-	            graphics.setPaint(backgroundColor);
-	            graphics.fillRect(0, 0, width, height);
-	        }
+//	        int width = getWidth();
+//	        int height = getHeight();
 
 	        // Draw the text
 	        if (glyphVectors != null && glyphVectors.getLength() > 0) {
@@ -106,7 +121,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            float lineHeight = lm.getHeight();
 
 //	            float y = height - (textHeight + padding.bottom);
-	            float y = height - textHeight;
+//	            float y = height - textHeight;
 
 	            for (int i = 0, n = glyphVectors.getLength(); i < n; i++) {
 	                GlyphVector glyphVector = glyphVectors.get(i);
@@ -115,7 +130,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                float lineWidth = (float)textBounds.getWidth();
 
 //	                float x = padding.left;
-	                float x = 0;
+//	                float x = 0;
 
 	                if (graphics instanceof PrintGraphics) {
 	                    // Work-around for printing problem in applets
@@ -133,8 +148,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        }
 	        
             // Paint out the children
-            for (SkinNode n : children)
-            	n.paint(graphics);
+            for (SkinNode childNode : children) {
+            	childNode.paint(graphics, x, y+textHeight);
+            	x += childNode.nodeWidth;
+            }
 	    }	    
     } // End of SkinNode 
 	
@@ -253,7 +270,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         }
 
         if (rootSkinNode != null) {
-        	rootSkinNode.paint(graphics);
+        	rootSkinNode.paint(graphics, 0, 0);
         }
     }
 
