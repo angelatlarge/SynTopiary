@@ -14,10 +14,9 @@ import org.apache.pivot.wtk.GraphicsUtilities;
 import org.apache.pivot.wtk.HorizontalAlignment;
 import org.apache.pivot.wtk.VerticalAlignment;
 import org.apache.pivot.wtk.media.Image;
-import org.apache.pivot.wtk.media.ImageListener;
 import org.apache.pivot.wtk.skin.ComponentSkin;
 
-public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListener {
+public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener {
     private Color backgroundColor = null;
     private float opacity = 1.0f;
     private HorizontalAlignment horizontalAlignment = HorizontalAlignment.CENTER;
@@ -31,105 +30,47 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
     private float scaleX = 1;
     private float scaleY = 1;
 
-    private ImageListener imageListener = new ImageListener() {
-        @Override
-        public void sizeChanged(Image image, int previousWidth, int previousHeight) {
-            invalidateComponent();
-        }
-
-        @Override
-        public void baselineChanged(Image image, int previousBaseline) {
-            invalidateComponent();
-        }
-
-        @Override
-        public void regionUpdated(Image image, int x, int y, int width, int height) {
-            // TODO A rounding error is causing an off-by-one error; we're
-            // accounting for it here by adding 1 to width and height
-            Bounds bounds = new Bounds(imageX + (int)Math.floor(x * scaleX),
-                imageY + (int)Math.floor(y * scaleY),
-                (int)Math.ceil(width * scaleX) + 1,
-                (int)Math.ceil(height * scaleY) + 1);
-            repaintComponent(bounds);
-        }
-    };
-
     @Override
     public void install(Component component) {
         super.install(component);
 
         TopiaryView topiaryView = (TopiaryView)component;
-        topiaryView.getTopiaryViewListeners().add(this);
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
+        parseTopiary.getParseTopiaryListeners().add(this);
+//        topiaryView.getTopiaryViewListeners().add(this);
 
-        ParseTopiary tree = topiaryView.getTree();
-        if (tree != null) {
-            tree.getImageListeners().add(imageListener);
-        }
     }
 
     @Override
     public int getPreferredWidth(int height) {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        Image image = topiaryView.getImage();
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        return (image == null) ? 0 : image.getWidth();
+        return (parseTopiary == null) ? 0 : 300;
     }
 
     @Override
     public int getPreferredHeight(int width) {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        Image image = topiaryView.getImage();
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        return (image == null) ? 0 : image.getHeight();
+        return (parseTopiary == null) ? 0 : 300;
     }
 
     @Override
     public Dimensions getPreferredSize() {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        Image image = topiaryView.getImage();
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        return (image == null) ? new Dimensions(0, 0) : new Dimensions(image.getWidth(),
-            image.getHeight());
+        return (parseTopiary == null) ? new Dimensions(0, 0) : new Dimensions(300, 300);
     }
 
     @Override
     public int getBaseline(int width, int height) {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        Image image = topiaryView.getImage();
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        int baseline = -1;
-
-        if (image != null) {
-            baseline = image.getBaseline();
-
-            if (baseline != -1) {
-                Dimensions imageSize = image.getSize();
-
-                if (fill) {
-                    // Scale to fit
-                    if (preserveAspectRatio) {
-                        float aspectRatio = (float)width / (float)height;
-                        float imageAspectRatio = (float)imageSize.width / (float)imageSize.height;
-
-                        if (aspectRatio > imageAspectRatio) {
-                            baseline *= (float)height / (float)imageSize.height;
-                        } else {
-                            float scaleYLocal = (float)width / (float)imageSize.width;
-                            baseline *= scaleYLocal;
-                            baseline += (int)(height - imageSize.height * scaleYLocal) / 2;
-                        }
-                    } else {
-                        baseline *= (float)height / (float)imageSize.height;
-                    }
-                } else {
-                    if (verticalAlignment == VerticalAlignment.CENTER) {
-                        baseline += (height - imageSize.height) / 2;
-                    } else if (verticalAlignment == VerticalAlignment.BOTTOM) {
-                        baseline += height - imageSize.height;
-                    }
-                }
-            }
-        }
+        int baseline = 300;
 
         return baseline;
     }
@@ -137,68 +78,16 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
     @Override
     public void layout() {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        Image image = topiaryView.getImage();
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        if (image != null) {
-            int width = getWidth();
-            int height = getHeight();
-
-            Dimensions imageSize = image.getSize();
-
-            if (fill) {
-                // Scale to fit
-                if (preserveAspectRatio) {
-                    float aspectRatio = (float)width / (float)height;
-                    float imageAspectRatio = (float)imageSize.width / (float)imageSize.height;
-
-                    if (aspectRatio > imageAspectRatio) {
-                        imageY = 0;
-                        scaleY = (float)height / (float)imageSize.height;
-
-                        imageX = (int)(width - imageSize.width * scaleY) / 2;
-                        scaleX = scaleY;
-                    } else {
-                        imageX = 0;
-                        scaleX = (float)width / (float)imageSize.width;
-
-                        imageY = (int)(height - imageSize.height * scaleX) / 2;
-                        scaleY = scaleX;
-                    }
-                } else {
-                    imageX = 0;
-                    scaleX = (float)width / (float)imageSize.width;
-
-                    imageY = 0;
-                    scaleY = (float)height / (float)imageSize.height;
-                }
-            } else {
-                if (horizontalAlignment == HorizontalAlignment.CENTER) {
-                    imageX = (width - imageSize.width) / 2;
-                } else if (horizontalAlignment == HorizontalAlignment.RIGHT) {
-                    imageX = width - imageSize.width;
-                } else {
-                    imageX = 0;
-                }
-
-                scaleX = 1.0f;
-
-                if (verticalAlignment == VerticalAlignment.CENTER) {
-                    imageY = (height - imageSize.height) / 2;
-                } else if (verticalAlignment == VerticalAlignment.BOTTOM) {
-                    imageY = height - imageSize.height;
-                } else {
-                    imageY = 0;
-                }
-
-                scaleY = 1.0f;
-            }
+        if (parseTopiary != null) {
         }
     }
 
     @Override
     public void paint(Graphics2D graphics) {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        ParseTopiary tree = topiaryView.getTree();
+        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
         int width = getWidth();
         int height = getHeight();
@@ -208,7 +97,7 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
             graphics.fillRect(0, 0, width, height);
         }
 
-        if (tree != null) {
+        if (parseTopiary != null) {
             Graphics2D imageGraphics = (Graphics2D)graphics.create();
             imageGraphics.translate(imageX, imageY);
             imageGraphics.scale(scaleX, scaleY);
@@ -227,7 +116,9 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
                 imageGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
             }
 
-            image.paint(imageGraphics);
+            /*
+             * TODO: paint here
+             */
             imageGraphics.dispose();
         }
     }
@@ -388,23 +279,11 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
         repaintComponent();
     }
 
-    // Image view events
-    @Override
-    public void imageChanged(TopiaryView topiaryView, Image previousImage) {
-        if (previousImage != null) {
-            previousImage.getImageListeners().remove(imageListener);
-        }
+    // events
 
-        Image image = topiaryView.getImage();
-        if (image != null) {
-            image.getImageListeners().add(imageListener);
-        }
-
+	@Override
+	public void parseTopiaryChanged(ParseTopiary parseTopiary) {
         invalidateComponent();
-    }
+	}
 
-    @Override
-    public void asynchronousChanged(TopiaryView topiaryView) {
-        // No-op
-    }
 }

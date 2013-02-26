@@ -2,31 +2,25 @@ package org.kirill.syntopiary;
 
 import java.util.ArrayList;
 
+import org.apache.pivot.util.ListenerList;
+
 public class ParseTopiary {
 	
-    protected static class ParseTopiaryListenerList extends ListenerList<TopiaryListener>
-    implements ImageListener {
-    @Override
-    public void sizeChanged(Image image, int previousWidth, int previousHeight) {
-        for (ImageListener listener : this) {
-            listener.sizeChanged(image, previousWidth, previousHeight);
-        }
+	// Listeneres
+    protected static class ParseTopiaryListenerList extends ListenerList<ParseTopiaryListener>
+    implements ParseTopiaryListener {
+        public void parseTopiaryChanged(ParseTopiary parseTopiary) {
+	        for (ParseTopiaryListener listener : this) {
+	            listener.parseTopiaryChanged(parseTopiary);
+	        }
+	    }
     }
-
-    @Override
-    public void baselineChanged(Image image, int previousBaseline) {
-        for (ImageListener listener : this) {
-            listener.baselineChanged(image, previousBaseline);
-        }
+    protected ParseTopiaryListenerList parseTopiaryListeners = new ParseTopiaryListenerList();
+    
+    public ListenerList<ParseTopiaryListener> getParseTopiaryListeners() {
+        return parseTopiaryListeners;
     }
-
-    @Override
-    public void regionUpdated(Image image, int x, int y, int width, int height) {
-        for (ImageListener listener : this) {
-            listener.regionUpdated(image, x, y, width, height);
-        }
-    }
-    }
+    
 	
 	protected ParseTopiaryNode root;
 	
@@ -89,10 +83,15 @@ public class ParseTopiary {
 		}
 		
 	} // end of ParseTopiaryNode
+
+	public ParseTopiary() {
+		root = null;
+	}
 	
 	public ParseTopiary(StringBuilder src) {
 		root = new ParseTopiaryNode(src);
 	}
+	
 	public ParseTopiary(String src) {
 		StringBuilder s = new StringBuilder();
 		s.append(src);
