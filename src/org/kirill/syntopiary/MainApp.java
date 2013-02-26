@@ -20,6 +20,7 @@ public class MainApp implements Application {
         BXMLSerializer bxmlSerializer = new BXMLSerializer();
         window = (SyntopWindow)bxmlSerializer.readObject(MainApp.class, "syntop.bxml");
         window.open(display);
+        window.applyTreeSpecificationText();
     }
  
     @Override

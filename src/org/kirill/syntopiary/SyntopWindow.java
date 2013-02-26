@@ -62,14 +62,11 @@ public class SyntopWindow extends Window implements Bindable {
     @BXML private PushButton btnParse = null;
      
     
-    private Action applyTreeSpecificationAction = new Action(false) {
+    private Action applyTreeSpecificationTextAction = new Action(true) {
         @Override
         @SuppressWarnings("unchecked")
         public void perform(Component source) {
-        	String s = treeTextArea.getText();
-        	/*
-        	 * TODO: apply text to the tree
-        	 */
+        	applyTreeSpecificationText();
         }
     };    
   
@@ -99,8 +96,13 @@ public class SyntopWindow extends Window implements Bindable {
             }
     	});
         // Assign actions to add and remove symbol buttons
-    	btnParse.setAction(applyTreeSpecificationAction);
+    	btnParse.setAction(applyTreeSpecificationTextAction);
  
+    }
+
+    public void applyTreeSpecificationText() {
+    	String s = treeTextArea.getText();
+    	mainView.getParseTopiary().setParseString(s);
     }
 
 }

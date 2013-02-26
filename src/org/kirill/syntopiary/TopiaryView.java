@@ -35,12 +35,6 @@ public class TopiaryView extends Component {
         installSkin(TopiaryView.class);
     }
 
-    /**
-     * Returns the image view's current image.
-     *
-     * @return
-     * The current image, or <tt>null</tt> if no image is set.
-     */
     public ParseTopiary getParseTopiary() {
         return parseTopiary;
     }

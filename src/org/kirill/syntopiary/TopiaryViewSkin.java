@@ -32,18 +32,23 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	
     private class SkinNode {
     	TopiaryViewSkin skin;
+    	
     	final ParseTopiaryNode parseNode;
         private ArrayList<GlyphVector> glyphVectors = null;
         private float textHeight = 0;
 		protected ArrayList<SkinNode> children = new ArrayList<SkinNode>(); 
     	
-    	public SkinNode(TopiaryViewSkin skin, ParseTopiaryNode parseTopiaryNode) {
+    	public SkinNode(TopiaryViewSkin parentSkin, ParseTopiaryNode parseTopiaryNode) {
+    		assert(parentSkin != null);
+    		skin = parentSkin;
     		parseNode = parseTopiaryNode;
     		for (ParseTopiaryNode n : parseNode.children()) 
     			children.add(new SkinNode(skin, n));
     	}
     	
         public void layout() {
+	    	System.out.print("SkinNode.layout()\n");
+	    	
             String text = parseNode.getText();
 
             glyphVectors = new ArrayList<GlyphVector>();
@@ -65,6 +70,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	
 	    private void appendLine(String text, int start, int end, FontRenderContext fontRenderContext) {
 	        StringCharacterIterator line = new StringCharacterIterator(text, start, end, start);
+	        assert(skin != null);
+	        assert(skin.getDefaultFont() != null);
 	        GlyphVector glyphVector = skin.getDefaultFont().createGlyphVector(fontRenderContext, line);
 	        glyphVectors.add(glyphVector);
 
@@ -73,6 +80,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	    }
     	
 	    public void paint(Graphics2D graphics) {
+	    	System.out.print("SkinNode.paint()\n");
 
 	        int width = getWidth();
 	        int height = getHeight();
@@ -121,12 +129,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            }
 	        }
 	    }	    
-    }
+    } // End of SkinNode 
 	
     private Color backgroundColor = null;
     private float opacity = 1.0f;
-
-    private boolean fill = false;
 
     private Font defaultFont;
     private Color defaultColor;
@@ -162,6 +168,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     
     @Override
     public int getPreferredWidth(int height) {
+    	System.out.print("getPreferredWidth\n");
         TopiaryView topiaryView = (TopiaryView)getComponent();
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
@@ -170,6 +177,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
     @Override
     public int getPreferredHeight(int width) {
+    	System.out.print("getPreferredHeight\n");
         TopiaryView topiaryView = (TopiaryView)getComponent();
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
@@ -178,24 +186,30 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
     @Override
     public Dimensions getPreferredSize() {
-        TopiaryView topiaryView = (TopiaryView)getComponent();
+    	System.out.print("getPreferredSize\n");
+    	TopiaryView topiaryView = (TopiaryView)getComponent();
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        return (parseTopiary == null) ? new Dimensions(0, 0) : new Dimensions(300, 300);
+        assert(parseTopiary != null);
+        return new Dimensions(300, 300);
+//        return (parseTopiary == null) ? new Dimensions(0, 0) : new Dimensions(300, 300);
     }
 
     @Override
     public int getBaseline(int width, int height) {
+    	System.out.print("getBaseline\n");
 //        TopiaryView topiaryView = (TopiaryView)getComponent();
 //        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        int baseline = 300;
+//    	int baseline = 300;
+        int baseline = 0;
 
         return baseline;
     }
 
     @Override
     public void layout() {
+    	System.out.print("TopiaryViewSkin.layout\n");
         buildNodes();
         if (rootSkinNode != null) {
         	rootSkinNode.layout();
@@ -221,6 +235,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     
     @Override
     public void paint(Graphics2D graphics) {
+    	System.out.print("Painting a TopiaryViewSkin\n");
 
         int width = getWidth();
         int height = getHeight();
@@ -235,41 +250,30 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         }
     }
 
-    /**
-     * @return
-     * <tt>false</tt>; image views are not focusable.
-     */
     @Override
     public boolean isFocusable() {
+    	System.out.print("isFocusable\n");
         return false;
     }
 
     @Override
     public boolean isOpaque() {
-        return (backgroundColor != null
-            && backgroundColor.getTransparency() == Transparency.OPAQUE);
+    	System.out.print("isOpaque\n");
+    	return true;
+//        return (backgroundColor != null
+//            && backgroundColor.getTransparency() == Transparency.OPAQUE);
     }
 
-    /**
-     * Returns the color that is painted behind the image
-     */
     public Color getBackgroundColor() {
+    	System.out.print("getBackgroundColor\n");
         return backgroundColor;
     }
 
-    /**
-     * Sets the color that is painted behind the image
-     */
     public void setBackgroundColor(Color backgroundColor) {
         this.backgroundColor = backgroundColor;
         repaintComponent();
     }
 
-    /**
-     * Sets the color that is painted behind the image
-     * @param backgroundColor Any of the
-     * {@linkplain GraphicsUtilities#decodeColor color values recognized by Pivot}.
-     */
     public final void setBackgroundColor(String backgroundColor) {
         if (backgroundColor == null) {
             throw new IllegalArgumentException("backgroundColor is null.");
@@ -278,18 +282,14 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         setBackgroundColor(GraphicsUtilities.decodeColor(backgroundColor));
     }
 
-    /**
-     * Returns the opacity of the image, in [0,1].
-     */
     public float getOpacity() {
-        return opacity;
+    	System.out.print("getOpacity\n");
+    	return 1.0f;
+//        return opacity;
     }
 
-    /**
-     * Sets the opacity of the image.
-     * @param opacity A number between 0 (transparent) and 1 (opaque)
-     */
     public void setOpacity(float opacity) {
+    	System.out.print("setOpacity\n");
         if (opacity < 0 || opacity > 1) {
             throw new IllegalArgumentException("Opacity out of range [0,1].");
         }
@@ -298,11 +298,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         repaintComponent();
     }
 
-    /**
-     * Sets the opacity of the image.
-     * @param opacity A number between 0 (transparent) and 1 (opaque)
-     */
     public final void setOpacity(Number opacity) {
+    	System.out.print("setOpacity\n");
         if (opacity == null) {
             throw new IllegalArgumentException("opacity is null.");
         }
@@ -310,30 +307,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         setOpacity(opacity.floatValue());
     }
 
-    /**
-     * Returns a boolean indicating whether the image will be scaled to fit
-     * the space in which it is placed.
-     */
-    public boolean getFill() {
-        return fill;
-    }
-
-    /**
-     * Sets a boolean indicating whether the image will be scaled to fit
-     * the space in which it is placed.  Note that for scaling to occur,
-     * the TopiaryView must specify a preferred size or be placed
-     * in a container that constrains its size.
-     */
-    public void setFill(boolean fill) {
-        this.fill = fill;
-        layout();
-        repaintComponent();
-    }
-
     // events
 
 	@Override
 	public void parseTopiaryChanged(ParseTopiary parseTopiary) {
+		System.out.format("Received change notification: new string is %s...\n", parseTopiary.getParseString());
 		reBuildNodes();
         invalidateComponent();
 	}

@@ -24,7 +24,8 @@ public class ParseTopiary {
     }
     
 	
-	public ParseTopiaryNode root;
+	protected ParseTopiaryNode root;
+	protected String parseString;
 	
 	public class ParseTopiaryNode {
 		protected String text;
@@ -94,22 +95,46 @@ public class ParseTopiary {
 	} // end of ParseTopiaryNode
 
 	public ParseTopiary() {
+		parseString = null;
 		root = null;
 	}
 	
 	public ParseTopiary(StringBuilder src) {
+		parseString = src.toString();
 		root = new ParseTopiaryNode(src);
 	}
 	
 	public ParseTopiary(String src) {
-		StringBuilder s = new StringBuilder();
-		s.append(src);
-		root = new ParseTopiaryNode(s);
+		root = null;
+		parseString = null;
+		setParseString(src);
 	}
 	
 	public ParseTopiaryNode getRoot() {
 		return root;
 	}
+	
+	public String getParseString() {
+		return parseString;
+	}
+	
+	public void setParseString(String src) {
+		if (src.length() == 0) {
+			parseString = null;
+		} else {
+			parseString = src;
+		}
+		if (parseString != null) {
+			StringBuilder s = new StringBuilder();
+			s.append(src);
+			root = new ParseTopiaryNode(s);
+		} else {
+			root = null;
+		}
+		System.out.format("Notifying listeners of changes: new string is %s...\n", parseString);
+		parseTopiaryListeners.parseTopiaryChanged(this);
+	}
+	
 	public String toString() {
 		return root.toString();
 	}

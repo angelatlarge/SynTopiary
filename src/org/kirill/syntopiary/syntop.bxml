@@ -16,11 +16,12 @@
             horizontalSpacing:1, showVerticalGridLines:true}">
             <columns>
                 <TablePane.Column width="300"/>
+                <TablePane.Column width="100"/>
             </columns>
  
             <TablePane.Row height="300">
-                <TablePane.Filler/>
 				<syntopiary:TopiaryView bxml:id="mainView"/>
+                <TablePane.Filler/>
             </TablePane.Row>
  
             <TablePane.Row height="50">
