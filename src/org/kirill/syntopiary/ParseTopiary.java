@@ -1,6 +1,9 @@
 package org.kirill.syntopiary;
 
+import Board;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.pivot.util.ListenerList;
 
@@ -22,7 +25,7 @@ public class ParseTopiary {
     }
     
 	
-	protected ParseTopiaryNode root;
+	public ParseTopiaryNode root;
 	
 	public class ParseTopiaryNode {
 		protected String text;
@@ -82,6 +85,13 @@ public class ParseTopiary {
 			return strResult.toString();
 		}
 		
+		public String getText() {
+			return text;
+		}
+		
+		public Iterable<ParseTopiaryNode> children() {
+			return children;
+		}
 	} // end of ParseTopiaryNode
 
 	public ParseTopiary() {
@@ -98,6 +108,9 @@ public class ParseTopiary {
 		root = new ParseTopiaryNode(s);
 	}
 	
+	public ParseTopiaryNode getRoot() {
+		return root;
+	}
 	public String toString() {
 		return root.toString();
 	}

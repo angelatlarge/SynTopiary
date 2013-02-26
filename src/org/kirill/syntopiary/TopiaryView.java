@@ -2,7 +2,6 @@ package org.kirill.syntopiary;
 
 import org.apache.pivot.beans.DefaultProperty;
 import org.apache.pivot.util.ListenerList;
-import org.apache.pivot.wtk.BindType;
 import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.WTKListenerList;
 
