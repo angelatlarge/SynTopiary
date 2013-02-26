@@ -1,14 +1,11 @@
 package org.kirill.syntopiary;
 
 
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.PrintGraphics;
-import java.awt.Transparency;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
@@ -20,10 +17,8 @@ import org.apache.pivot.wtk.Bounds;
 import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.Dimensions;
 import org.apache.pivot.wtk.GraphicsUtilities;
-import org.apache.pivot.wtk.HorizontalAlignment;
 import org.apache.pivot.wtk.Platform;
 import org.apache.pivot.wtk.Theme;
-import org.apache.pivot.wtk.VerticalAlignment;
 import org.apache.pivot.wtk.skin.ComponentSkin;
 
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
@@ -51,6 +46,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         
         private float fullWidth = 0;			// Width of this node + children
         private float fullHeight = 0;			// Height of this node + children
+        
+        private float xPaddingSelf = 0;
+        private float xPaddingChildren = 0;
         
 		protected ArrayList<SkinNode> children = new ArrayList<SkinNode>(); 
     	
@@ -95,6 +93,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             nodeBoxHeight = nodeTextHeight + nNodeYMargin * 2;
             
             fullWidth = Math.max(nodeBoxWidth, childrenWidth);
+            xPaddingSelf = xPaddingChildren = Math.abs(nodeBoxWidth - childrenWidth)/2;
+            if (nodeBoxWidth>childrenWidth) 
+            	xPaddingSelf = 0;
+            else 
+            	xPaddingChildren = 0;
             fullHeight = nodeBoxHeight + childrenHeight;
             
         }
@@ -125,13 +128,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.GREEN);
-            	graphics.drawRect((int)x, (int)y, (int)nodeBoxWidth, (int)nodeBoxHeight);
+            	graphics.drawRect((int)(x + xPaddingSelf), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
             }
             if (fDrawTextBoundaries) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.RED);
-            	graphics.drawRect((int)(x + nNodeXMargin), (int)(y + nNodeYMargin), (int)nodeTextWidth, (int)nodeTextHeight);
+            	graphics.drawRect((int)(x + nNodeXMargin + xPaddingSelf), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
             }
             
 	        // Draw the text
@@ -143,7 +146,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            FontRenderContext fontRenderContext = Platform.getFontRenderContext();
 	            LineMetrics lm = skin.getDefaultFont().getLineMetrics("", fontRenderContext);
 	            float ascent = lm.getAscent();
-	            float lineHeight = lm.getHeight();
+	            @SuppressWarnings("unused")
+				float lineHeight = lm.getHeight();
 
 //	            float y = height - (textHeight + padding.bottom);
 //	            float y = height - textHeight;
@@ -153,7 +157,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                GlyphVector glyphVector = glyphVectors.get(i);
 
 	                Rectangle2D textBounds = glyphVector.getLogicalBounds();
-	                float lineWidth = (float)textBounds.getWidth();
+	                @SuppressWarnings("unused")
+					float lineWidth = (float)textBounds.getWidth();
 
 //	                float x = padding.left;
 //	                float x = 0;
@@ -161,11 +166,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                if (graphics instanceof PrintGraphics) {
 	                    // Work-around for printing problem in applets
 	                    if (text != null && text.length() > 0) {
-	                        graphics.drawString(text, x + nNodeXMargin, nLineY + ascent);
+	                        graphics.drawString(text, x + nNodeXMargin + xPaddingSelf, nLineY + ascent);
 	                    }
 	                }
 	                else {
-	                    graphics.drawGlyphVector(glyphVector, x + nNodeXMargin, nLineY + ascent);
+	                    graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + xPaddingSelf, nLineY + ascent);
 	                }
 
 	                nLineY += textBounds.getHeight();
@@ -174,15 +179,17 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        }
 	        
             // Paint out the children
+	        float nChildStartX = x + xPaddingChildren;
             for (SkinNode childNode : children) {
-            	childNode.paint(graphics, x, y+nodeBoxHeight);
-            	x += childNode.fullWidth;
+            	childNode.paint(graphics, nChildStartX, y+nodeBoxHeight);
+            	nChildStartX += childNode.fullWidth;
             }
 	    }	    
     } // End of SkinNode 
 	
     private Color backgroundColor = null;
-    private float opacity = 1.0f;
+    @SuppressWarnings("unused")
+	private float opacity = 1.0f;
 
     private Font defaultFont;
     private Color defaultColor;
@@ -296,6 +303,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         }
 
         if (rootSkinNode != null) {
+        	// TODO:Take care of padding here 
         	rootSkinNode.paint(graphics, 0, 0);
         }
     }
