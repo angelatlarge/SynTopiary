@@ -21,11 +21,6 @@ public interface TopiaryViewBindingListener {
             // empty block
         }
 
-        @Override
-        public void imageBindMappingChanged(TopiaryView topiaryView,
-            TopiaryView.ImageBindMapping previousImageBindMapping) {
-            // empty block
-        }
     }
 
     /**
@@ -45,12 +40,4 @@ public interface TopiaryViewBindingListener {
     public void imageBindTypeChanged(TopiaryView topiaryView,
         BindType previousImageBindType);
 
-    /**
-     * Called when an image view's text bind mapping has changed.
-     *
-     * @param topiaryView
-     * @param previousImageBindMapping
-     */
-    public void imageBindMappingChanged(TopiaryView topiaryView,
-        TopiaryView.ImageBindMapping previousImageBindMapping);
 }

@@ -9,58 +9,20 @@ import org.apache.pivot.wtk.WTKListenerList;
 import org.apache.pivot.wtk.media.Image;
 
 /**
- * Component that displays an image.
+ * Component that displays a tree.
  */
 @DefaultProperty("image")
 public class TopiaryView extends Component {
     /**
-     * Translates between image and context data during data binding.
+     * Translates between tree and context data during data binding.
      */
-    public interface ImageBindMapping {
-        /**
-         * Defines the supported load type mappings.
-         */
-        public enum Type {
-            IMAGE,
-            NAME
-        }
-
-        /**
-         * Returns the load type supported by this mapping.
-         */
-        public Type getType();
-
-        /**
-         * Converts a value from the bind context to an image representation
-         * during a {@link Component#load(Object)} operation.
-         *
-         * @param value
-         */
-        public Image toImage(Object value);
-
-        /**
-         * Converts a value from the bind context to an image resource name
-         * during a {@link Component#load(Object)} operation.
-         *
-         * @param value
-         */
-        public String toImageName(Object value);
-
-        /**
-         * Converts a text string to a value to be stored in the bind context
-         * during a {@link Component#store(Object)} operation.
-         *
-         * @param image
-         */
-        public Object valueOf(Image image);
-    }
 
     private static class TopiaryViewListenerList extends WTKListenerList<TopiaryViewListener>
         implements TopiaryViewListener {
         @Override
-        public void imageChanged(TopiaryView topiaryView, Image previousImage) {
+        public void treeChanged(TopiaryView topiaryView, ParseTopiary previousTree) {
             for (TopiaryViewListener listener : this) {
-                listener.imageChanged(topiaryView, previousImage);
+                listener.treeChanged(topiaryView, previousTree);
             }
         }
 
@@ -89,19 +51,11 @@ public class TopiaryView extends Component {
             }
         }
 
-        @Override
-        public void imageBindMappingChanged(TopiaryView topiaryView,
-            TopiaryView.ImageBindMapping previousImageBindMapping) {
-            for (TopiaryViewBindingListener listener : this) {
-                listener.imageBindMappingChanged(topiaryView, previousImageBindMapping);
-            }
-        }
     }
 
-    private Image image = null;
+    private ParseTopiary tree = null;
     private String imageKey = null;
     private BindType imageBindType = BindType.BOTH;
-    private ImageBindMapping imageBindMapping = null;
 
     private TopiaryViewListenerList topiaryViewListeners = new TopiaryViewListenerList();
     private TopiaryViewBindingListenerList topiaryViewBindingListeners = new TopiaryViewBindingListenerList();
@@ -120,8 +74,8 @@ public class TopiaryView extends Component {
      * @param image
      * The initial image to set, or <tt>null</tt> for no image.
      */
-    public TopiaryView(Image image) {
-        setImage(image);
+    public TopiaryView(ParseTopiary tree) {
+        setTree(tree);
 
         installSkin(TopiaryView.class);
     }
@@ -132,8 +86,8 @@ public class TopiaryView extends Component {
      * @return
      * The current image, or <tt>null</tt> if no image is set.
      */
-    public Image getImage() {
-        return image;
+    public ParseTopiary getTree() {
+        return tree;
     }
 
     /**
@@ -142,116 +96,19 @@ public class TopiaryView extends Component {
      * @param image
      * The image to set, or <tt>null</tt> for no image.
      */
-    public void setImage(Image image) {
-        Image previousImage = this.image;
+    public void setTree(ParseTopiary tree) {
+    	ParseTopiary previousTree = this.tree;
 
-        if (previousImage != image) {
-            this.image = image;
-            topiaryViewListeners.imageChanged(this, previousImage);
+        if (previousTree != tree) {
+            this.tree = tree;
+            topiaryViewListeners.treeChanged(this, previousTree);
         }
     }
 
-
-    /**
-     * Returns the image view's image key.
-     *
-     * @return
-     * The image key, or <tt>null</tt> if no key is set.
-     */
-    public String getImageKey() {
-        return imageKey;
-    }
-
-    /**
-     * Sets the image view's image key.
-     *
-     * @param imageKey
-     * The image key, or <tt>null</tt> to clear the binding.
-     */
-    public void setImageKey(String imageKey) {
-        String previousImageKey = this.imageKey;
-
-        if (previousImageKey != imageKey) {
-            this.imageKey = imageKey;
-            topiaryViewBindingListeners.imageKeyChanged(this, previousImageKey);
-        }
-    }
-
-    public BindType getImageBindType() {
-        return imageBindType;
-    }
-
-    public void setImageBindType(BindType imageBindType) {
-        if (imageBindType == null) {
-            throw new IllegalArgumentException();
-        }
-
-        BindType previousImageBindType = this.imageBindType;
-
-        if (previousImageBindType != imageBindType) {
-            this.imageBindType = imageBindType;
-            topiaryViewBindingListeners.imageBindTypeChanged(this, previousImageBindType);
-        }
-    }
-
-    public ImageBindMapping getImageBindMapping() {
-        return imageBindMapping;
-    }
-
-    public void setImageBindMapping(ImageBindMapping imageBindMapping) {
-        ImageBindMapping previousImageBindMapping = this.imageBindMapping;
-
-        if (previousImageBindMapping != imageBindMapping) {
-            this.imageBindMapping = imageBindMapping;
-            topiaryViewBindingListeners.imageBindMappingChanged(this, previousImageBindMapping);
-        }
-    }
-
-    @Override
-    public void load(Object context) {
-        if (imageKey != null
-            && JSON.containsKey(context, imageKey)
-            && imageBindType != BindType.STORE) {
-            Object value = JSON.get(context, imageKey);
-
-            if (imageBindMapping != null) {
-                switch (imageBindMapping.getType()) {
-                    case IMAGE: {
-                        value = imageBindMapping.toImage(value);
-                        break;
-                    }
-
-                    case NAME: {
-                        value = imageBindMapping.toImageName(value);
-                        break;
-                    }
-                }
-            }
-
-            if (value == null
-                || value instanceof Image) {
-                setImage((Image)value);
-            } else {
-                throw new IllegalArgumentException(getClass().getName() + " can't bind to "
-                    + value + ".");
-            }
-        }
-    }
-
-    @Override
-    public void store(Object context) {
-        if (imageKey != null
-            && imageBindType != BindType.LOAD) {
-            JSON.put(context, imageKey, (imageBindMapping == null) ?
-                image : imageBindMapping.valueOf(image));
-        }
-    }
 
     @Override
     public void clear() {
-        if (imageKey != null) {
-            setImage((Image)null);
-        }
+        setTree((ParseTopiary)null);
     }
 
     /**

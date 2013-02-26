@@ -13,7 +13,7 @@ public interface TopiaryViewListener {
      */
     public static class Adapter implements TopiaryViewListener {
         @Override
-        public void imageChanged(TopiaryView topiaryView, Image previousImage) {
+        public void treeChanged(TopiaryView topiaryView, ParseTopiary previousTree) {
             // empty block
         }
 
@@ -29,7 +29,7 @@ public interface TopiaryViewListener {
      * @param topiaryView
      * @param previousTree
      */
-    public void imageChanged(TopiaryView topiaryView, Image previousImage);
+    public void treeChanged(TopiaryView topiaryView, ParseTopiary previousTree);
 
     /**
      * Called when an image view's asynchronous flag has changed.

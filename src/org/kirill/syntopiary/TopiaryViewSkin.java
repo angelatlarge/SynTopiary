@@ -12,18 +12,11 @@ import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.Dimensions;
 import org.apache.pivot.wtk.GraphicsUtilities;
 import org.apache.pivot.wtk.HorizontalAlignment;
-//import org.apache.pivot.wtk.TopiaryView;
-//import org.apache.pivot.wtk.TopiaryViewListener;
 import org.apache.pivot.wtk.VerticalAlignment;
 import org.apache.pivot.wtk.media.Image;
 import org.apache.pivot.wtk.media.ImageListener;
 import org.apache.pivot.wtk.skin.ComponentSkin;
 
-/**
- * Tree view skin.
- * <p>
- * TODO Add a rotation (float) style.
- */
 public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListener {
     private Color backgroundColor = null;
     private float opacity = 1.0f;
@@ -68,9 +61,9 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
         TopiaryView topiaryView = (TopiaryView)component;
         topiaryView.getTopiaryViewListeners().add(this);
 
-        Image image = topiaryView.getImage();
-        if (image != null) {
-            image.getImageListeners().add(imageListener);
+        ParseTopiary tree = topiaryView.getTree();
+        if (tree != null) {
+            tree.getImageListeners().add(imageListener);
         }
     }
 
@@ -205,7 +198,7 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
     @Override
     public void paint(Graphics2D graphics) {
         TopiaryView topiaryView = (TopiaryView)getComponent();
-        Image image = topiaryView.getImage();
+        ParseTopiary tree = topiaryView.getTree();
 
         int width = getWidth();
         int height = getHeight();
@@ -215,7 +208,7 @@ public class TopiaryViewSkin extends ComponentSkin implements TopiaryViewListene
             graphics.fillRect(0, 0, width, height);
         }
 
-        if (image != null) {
+        if (tree != null) {
             Graphics2D imageGraphics = (Graphics2D)graphics.create();
             imageGraphics.translate(imageX, imageY);
             imageGraphics.scale(scaleX, scaleY);
