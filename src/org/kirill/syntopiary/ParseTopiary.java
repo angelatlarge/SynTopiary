@@ -57,7 +57,7 @@ public class ParseTopiary {
 						}
 					} while (bMoreChildren);
 					
-				} else if (ch.equals(")")) {
+				} else if (ch.equals(")") || ch.equals(",")) {
 					// End this node
 					break;
 				} else {
@@ -65,7 +65,7 @@ public class ParseTopiary {
 				}
 			}
 			strText.append(src.substring(0, idxTokenEnd));
-			src.delete(0, idxTokenEnd+1);
+			src.delete(0, idxTokenEnd);
 			text = strText.toString();
 		}
 		
@@ -73,14 +73,14 @@ public class ParseTopiary {
 			StringBuilder strResult = new StringBuilder();
 			strResult.append(text);
 			if (children.size()>0) {
-				strResult.append("(");
+				strResult.append("[");
 				for (int i=0;i<children.size();i++) {
 					strResult.append(children.get(i).toString());
 					if (i<children.size()-1) {
-						strResult.append(",");
+						strResult.append(" | ");
 					}
-					strResult.append(")");
 				}
+				strResult.append("]");
 			}
 			return strResult.toString();
 		}
@@ -141,7 +141,7 @@ public class ParseTopiary {
 	
 	public static void main(String[] args) {
 		// Test
-		ParseTopiary pt = new ParseTopiary("ABC\\(XYZ");
+		ParseTopiary pt = new ParseTopiary("A(B,C)");
 		System.out.format(">%s<", pt.toString());
 
 	}
