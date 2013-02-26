@@ -47,9 +47,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	}
     	
         public void layout() {
-	    	System.out.print("SkinNode.layout()\n");
-	    	
+        	assert(parseNode!=null);
             String text = parseNode.getText();
+	    	System.out.format("SkinNode.layout(). Node text: %s\n", text);
+	    	
 
             glyphVectors = new ArrayList<GlyphVector>();
             textHeight = 0;
@@ -63,9 +64,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
                     appendLine(text, 0, text.length(), fontRenderContext);
                 }
             }
-            for (SkinNode n : children) {
+            // Lay out the children
+            for (SkinNode n : children)
             	n.layout();
-            }
         }
     	
 	    private void appendLine(String text, int start, int end, FontRenderContext fontRenderContext) {
@@ -80,7 +81,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	    }
     	
 	    public void paint(Graphics2D graphics) {
-	    	System.out.print("SkinNode.paint()\n");
+        	assert(parseNode!=null);
+            String text = parseNode.getText();
+	    	System.out.format("SkinNode.paint(). Node text: %s\n", text);
 
 	        int width = getWidth();
 	        int height = getHeight();
@@ -116,7 +119,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
 	                if (graphics instanceof PrintGraphics) {
 	                    // Work-around for printing problem in applets
-	                    String text = parseNode.getText();
 	                    if (text != null && text.length() > 0) {
 	                        graphics.drawString(text, x, y + ascent);
 	                    }
@@ -127,7 +129,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
 	                y += textBounds.getHeight();
 	            }
+	            
 	        }
+	        
+            // Paint out the children
+            for (SkinNode n : children)
+            	n.paint(graphics);
 	    }	    
     } // End of SkinNode 
 	
@@ -252,20 +259,20 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
     @Override
     public boolean isFocusable() {
-    	System.out.print("isFocusable\n");
+//    	System.out.print("isFocusable\n");
         return false;
     }
 
     @Override
     public boolean isOpaque() {
-    	System.out.print("isOpaque\n");
+//    	System.out.print("isOpaque\n");
     	return true;
 //        return (backgroundColor != null
 //            && backgroundColor.getTransparency() == Transparency.OPAQUE);
     }
 
     public Color getBackgroundColor() {
-    	System.out.print("getBackgroundColor\n");
+//    	System.out.print("getBackgroundColor\n");
         return backgroundColor;
     }
 
