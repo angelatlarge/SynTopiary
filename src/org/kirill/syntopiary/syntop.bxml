@@ -1,0 +1,30 @@
+<Window title="SynTopiary" maximized="false"
+    xmlns:bxml="http://pivot.apache.org/bxml"
+    xmlns="org.apache.pivot.wtk">
+	
+	<TablePane styles="{padding:8, verticalSpacing:8}">
+		<columns>
+			<TablePane.Column width="1*"/>
+		</columns>
+	 
+		<TablePane.Row height="1*">
+			<Border styles="{color:10}">
+				<FillPane bxml:id="fillPane">
+					<PushButton buttonData="One"/>
+					<PushButton buttonData="Two"/>
+					<PushButton buttonData="Three"/>
+				</FillPane>
+			</Border>
+		</TablePane.Row>
+	 
+		<TablePane.Row height="-1">
+			<Border styles="{color:10}">
+<!--
+				<TextArea minimumHeight="80" text="@sample2.txt"/>
+-->				
+				<TextArea minimumHeight="80" text="Text!"/>
+			</Border>
+		</TablePane.Row>
+	</TablePane>
+
+</Window>
