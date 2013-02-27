@@ -24,8 +24,8 @@ import org.apache.pivot.wtk.skin.ComponentSkin;
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 
 public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener {
-	private boolean fDrawTextBoundaries = true;
-	private boolean fDrawNodeBoundaries = true;
+	private boolean fDrawTextBoundaries = false;
+	private boolean fDrawNodeBoundaries = false;
 	private float nNodeXMargin = 4.0f;
 	private float nNodeYMargin = 2.0f;
 	private float minYNodeSpacing = 7.0f;
@@ -129,7 +129,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             		(leftPadding>0)?nodeBoxWidth+leftPadding:nodeBoxWidth, 
             		(leftPadding<0)?childrenWidth-leftPadding:childrenWidth);		
             fullHeight = nodeBoxHeight + connectHeight + childrenHeight;
-			connectionPointX = nodeBoxWidth/2;
+			connectionPointX = ((leftPadding>0)?leftPadding:0)+nodeBoxWidth/2;
             
         }
     	
@@ -214,7 +214,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
             	// Paint the connection
-            	graphics.drawLine((int)(((leftPadding>0)?leftPadding:0)+connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
+            	graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
 				
 				// Paint the child
             	childNode.paint(graphics, nChildStartX, nChildrenStartY);
