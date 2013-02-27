@@ -155,6 +155,16 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 //	        int height = getHeight();
 
             
+            if (topiaryView.getDrawFullBoundaries()) {
+            	final BasicStroke strokeBox = new BasicStroke(1.0f);
+            	graphics.setStroke(strokeBox);
+            	graphics.setColor(Color.BLUE);
+            	graphics.drawRect(
+            			(int)(x), 
+            			(int)y, 
+            			(int)(fullWidth), 
+            			(int)fullHeight);
+            }
             if (topiaryView.getDrawNodeBoundaries()) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
