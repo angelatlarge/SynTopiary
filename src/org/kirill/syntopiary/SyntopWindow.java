@@ -40,6 +40,7 @@ import org.apache.pivot.wtk.TextArea;
 import org.apache.pivot.wtk.TextAreaContentListener;
 import org.apache.pivot.wtk.TextInput;
 import org.apache.pivot.wtk.Window;
+import org.apache.pivot.wtk.TextAreaContentListener;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.*;
@@ -54,13 +55,21 @@ public class SyntopWindow extends Window implements Bindable {
 	@BXML private Checkbox chkDebugDrawBoxNode = null;
 	@BXML private Checkbox chkDebugDrawBoxFull = null;
      
+	
     private Action applyTreeSpecificationTextAction = new Action(true) {
         @Override
         public void perform(Component source) {
         	applyTreeSpecificationText();
         }
     };    
-    
+
+	private SyntopTextAreaListener treeTextAreaEventSync = new SyntopTextAreaListener.Adapter() {
+        @Override
+        public void enterPressed(SyntopTextArea syntopTextArea) {
+        	applyTreeSpecificationText();
+        }
+	};
+
     private Action debugOptionsChangedAction = new Action(true) {
         @Override
         public void perform(Component source) {
@@ -104,7 +113,7 @@ public class SyntopWindow extends Window implements Bindable {
     	if (chkDebugDrawBoxText != null) chkDebugDrawBoxText.setAction(debugOptionsChangedAction);
     	if (chkDebugDrawBoxNode != null) chkDebugDrawBoxNode.setAction(debugOptionsChangedAction);
     	if (chkDebugDrawBoxFull != null) chkDebugDrawBoxFull.setAction(debugOptionsChangedAction);
- 
+    	treeTextArea.getSyntopTextAreaListeners().add(treeTextAreaEventSync);
     }
 
     public void applyTreeSpecificationText() {

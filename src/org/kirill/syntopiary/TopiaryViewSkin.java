@@ -96,15 +96,18 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             nodeTextHeight = 0;
             nodeTextWidth = 0;
             
+            int nTextLength = 0;
             if (text != null) {
-                int n = text.length();
-                if (n > 0) {
+            	nTextLength = text.length();
+                if (nTextLength > 0) {
                     FontRenderContext fontRenderContext = Platform.getFontRenderContext();
                     appendLine(text, 0, text.length(), fontRenderContext);
                 }
             }
             nodeBoxWidth = nodeTextWidth + nNodeXMargin * 2;
-            nodeBoxHeight = nodeTextHeight + nNodeYMargin * 2;
+            nodeBoxHeight = nodeTextHeight;
+            if (nTextLength>0) 
+            	nodeBoxHeight += nNodeYMargin * 2;
             
 			// Calculate the layout w.r.t. children
 			if (children.size() > 1) {
