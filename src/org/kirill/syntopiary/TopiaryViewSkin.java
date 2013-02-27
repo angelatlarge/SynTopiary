@@ -96,8 +96,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 			// Calculate the layout w.r.t. children
 			if (children.size() > 1) {
 				// At least two children
-				float connectLeft = children.get(0).connectionPointX;
-				float connectRight = children.get(children.size()-1).connectionPointX;
+				SkinNode childFirst = children.get(0); 
+				SkinNode childLast = children.get(children.size()-1); 
+				float connectLeft = childFirst.connectionPointX;
+				float connectRight = childrenWidth - childLast.fullWidth + childLast.connectionPointX;
 				connectHeight = (connectRight-connectLeft)*lineSlope;
 				if (connectHeight < minYNodeSpacing) {
 					// Need to space out the children to maintain line slope
@@ -110,6 +112,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 					childXSpacing = 0;
 				}
 				connectionPointX = (connectLeft+connectRight)/2;
+				System.out.format("layout: 2+ children, lconn:%d rconn:%d, cspace: %d, connself:%d\n", (int)connectLeft, (int)connectRight, (int)childXSpacing, (int)connectionPointX);
 				leftPadding = (connectionPointX - (nodeBoxWidth/2));
 			} else if (children.size() == 1) {
 				// One child
@@ -145,7 +148,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	    }
     	
     	/* SkinNode */
-	    public void paint(Graphics2D graphics, float x, float y) {
+	    @SuppressWarnings("unused")
+		public void paint(Graphics2D graphics, float x, float y) {
 	        TopiaryView topiaryView = (TopiaryView)getComponent();
         	assert(parseNode!=null);
             String text = parseNode.getText();
@@ -160,7 +164,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.BLUE);
             	graphics.drawRect(
-            			(int)(x), 
+            			(int)x, 
             			(int)y, 
             			(int)(fullWidth), 
             			(int)fullHeight);
@@ -176,6 +180,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.RED);
             	graphics.drawRect((int)(x + nNodeXMargin + ((leftPadding>0)?leftPadding:0)), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
+            }
+            if (false) {
+            	// Draw connection point Xs
+            	graphics.drawLine((int)(connectionPointX+x)-1, (int)(y)-1, (int)(connectionPointX+x)+1, (int)(y)+1);
+            	graphics.drawLine((int)(connectionPointX+x)-1, (int)(y)+1, (int)(connectionPointX+x)+1, (int)(y)-1);
+        		graphics.drawLine((int)(connectionPointX+x)-1, (int)(y+nodeBoxHeight)-1, (int)(connectionPointX+x)+1, (int)(y+nodeBoxHeight)+1);
+        		graphics.drawLine((int)(connectionPointX+x)-1, (int)(y+nodeBoxHeight)+1, (int)(connectionPointX+x)+1, (int)(y+nodeBoxHeight)-1);
             }
             
 	        // Draw the text
@@ -211,7 +222,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                    }
 	                }
 	                else {
-	                    graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
+	                	graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
+	                	if (false) {
+	                		graphics.drawString(String.format("%d", (int)connectionPointX), x + nNodeXMargin + ((leftPadding>0)?leftPadding:0) + nodeTextWidth, nLineY + ascent);
+	                	}
 	                }
 
 	                nLineY += textBounds.getHeight();
@@ -224,7 +238,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
             	// Paint the connection
-            	graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
+            	if (true) {
+            		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
+            	}
 				
 				// Paint the child
             	childNode.paint(graphics, nChildStartX, nChildrenStartY);
