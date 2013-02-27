@@ -130,7 +130,7 @@ public class SyntopWindow extends Window implements Bindable {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             //This is where a real application would open the file.
-
+            mainView.generateSVG(file);
         } else {
         	// Open command cancelled by user
         }		

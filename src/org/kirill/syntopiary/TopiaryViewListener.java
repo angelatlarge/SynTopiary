@@ -1,4 +1,5 @@
 package org.kirill.syntopiary;
+import java.io.File;
 
 
 
@@ -11,7 +12,9 @@ public interface TopiaryViewListener {
     public static class Adapter implements TopiaryViewListener {
     	public void topiaryViewCosmeticOptionsChanged(TopiaryView topiaryView) {
     	}
-        public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
+    	public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
+    	}
+        public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
         }
 
     }
@@ -26,4 +29,8 @@ public interface TopiaryViewListener {
      */
 	public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView);
 
+    /**
+     * Request for file output
+     */
+    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file);
 }

@@ -10,6 +10,12 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.text.StringCharacterIterator;
 
 import org.apache.pivot.collections.ArrayList;
@@ -20,6 +26,13 @@ import org.apache.pivot.wtk.GraphicsUtilities;
 import org.apache.pivot.wtk.Platform;
 import org.apache.pivot.wtk.Theme;
 import org.apache.pivot.wtk.skin.ComponentSkin;
+
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.svggen.SVGGraphics2DIOException;
+import org.apache.batik.dom.GenericDOMImplementation;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.DOMImplementation;
 
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 
@@ -445,5 +458,38 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 //    	System.out.print("TopiaryViewSkin.topiaryViewLayoutOptionsChanged()\n");
         invalidateComponent();
 	}
+    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
+    	// TODO: Write this
+        // Get a DOMImplementation.
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+
+        // Create an instance of the SVG Generator.
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+    	
+        // Paint onto the generator
+        this.paint(svgGenerator);
+        
+        // Save to file
+        FileOutputStream streamOut;
+    	try {
+			streamOut = new FileOutputStream(file);
+	        Writer writerOut = new OutputStreamWriter(streamOut, "UTF-8");
+	        boolean useCSS = true; // we want to use CSS style attributes
+	        svgGenerator.stream(writerOut, useCSS);        
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SVGGraphics2DIOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
 }

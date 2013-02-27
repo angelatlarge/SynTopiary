@@ -1,5 +1,7 @@
 package org.kirill.syntopiary;
 
+import java.io.File;
+
 import org.apache.pivot.beans.DefaultProperty;
 import org.apache.pivot.util.ListenerList;
 import org.apache.pivot.wtk.Component;
@@ -27,6 +29,11 @@ public class TopiaryView extends Component {
         public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
             for (TopiaryViewListener listener : this) {
                 listener.topiaryViewLayoutOptionsChanged(topiaryView);
+            }
+        }
+        public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
+            for (TopiaryViewListener listener : this) {
+                listener.topiaryViewOutputRequestSVG(topiaryView, file);
             }
         }
 
@@ -62,5 +69,7 @@ public class TopiaryView extends Component {
     	fDrawFullBoundaries = newValue;
     	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
     }
-    
+    public void generateSVG( File file ) {
+    	topiaryViewListeners.topiaryViewOutputRequestSVG(this, file);
+    }
 }
