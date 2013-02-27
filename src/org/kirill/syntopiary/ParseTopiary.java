@@ -66,7 +66,7 @@ public class ParseTopiary {
 			}
 			strText.append(src.substring(0, idxTokenEnd));
 			src.delete(0, idxTokenEnd);
-			text = strText.toString();
+			text = strText.toString().trim();
 		}
 		
 		public String toString() {
