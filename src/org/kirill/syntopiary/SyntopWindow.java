@@ -53,11 +53,13 @@ import org.apache.pivot.wtk.PushButton;
 import org.apache.pivot.wtk.Span;
 import org.apache.pivot.wtk.TextArea;
 import org.apache.pivot.wtk.TextAreaContentListener;
+import org.apache.pivot.wtk.TextInput;
 import org.apache.pivot.wtk.Window;
  
 @SuppressWarnings("unused")
 public class SyntopWindow extends Window implements Bindable {
 	@BXML private TextArea treeTextArea = null;
+//	@BXML private TextInput treeTextInput = null;
 	@BXML private TopiaryView mainView = null;
     @BXML private PushButton btnParse = null;
      
@@ -86,15 +88,14 @@ public class SyntopWindow extends Window implements Bindable {
  
  
         // Add symbol text input event handler
+/*    	
     	treeTextArea.getTextAreaContentListeners().add(new TextAreaContentListener.Adapter() {
             @Override
             public void textChanged(TextArea textArea) {
-                /* 
-                 * TODO: respond to text changes, maybe
-                 */
-            	;
+                // TODO: respond to text changes, maybe
             }
     	});
+*/    	
         // Assign actions to add and remove symbol buttons
     	btnParse.setAction(applyTreeSpecificationTextAction);
  
@@ -102,6 +103,7 @@ public class SyntopWindow extends Window implements Bindable {
 
     public void applyTreeSpecificationText() {
     	String s = treeTextArea.getText();
+//    	String s = treeTextInput.getText();
     	mainView.getParseTopiary().setParseString(s);
     }
 

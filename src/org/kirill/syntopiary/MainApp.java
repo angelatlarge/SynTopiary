@@ -8,6 +8,7 @@ import org.apache.pivot.wtk.Display;
 import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
  
+@SuppressWarnings("unused")
 public class MainApp implements Application {
     private SyntopWindow window = null;
  
