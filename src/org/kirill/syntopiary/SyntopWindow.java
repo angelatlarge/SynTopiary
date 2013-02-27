@@ -43,6 +43,7 @@ import org.apache.pivot.wtk.ApplicationContext;
 import org.apache.pivot.wtk.BoxPane;
 import org.apache.pivot.wtk.Button;
 import org.apache.pivot.wtk.ButtonPressListener;
+import org.apache.pivot.wtk.Checkbox;
 import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.ComponentKeyListener;
 import org.apache.pivot.wtk.Display;
@@ -61,7 +62,10 @@ public class SyntopWindow extends Window implements Bindable {
 	@BXML private TextArea treeTextArea = null;
 //	@BXML private TextInput treeTextInput = null;
 	@BXML private TopiaryView mainView = null;
-    @BXML private PushButton btnParse = null;
+	@BXML private PushButton btnParse = null;
+	@BXML private Checkbox chkDebugDrawBoxText = null;
+	@BXML private Checkbox chkDebugDrawBoxNode = null;
+    @BXML private Checkbox chkDebugDrawBoxFull = null;
      
     
     private Action applyTreeSpecificationTextAction = new Action(true) {
@@ -71,7 +75,14 @@ public class SyntopWindow extends Window implements Bindable {
         	applyTreeSpecificationText();
         }
     };    
-  
+    
+    private Action debugOptionsChangedAction = new Action(true) {
+        @Override
+        @SuppressWarnings("unchecked")
+        public void perform(Component source) {
+        	applyDebugOptionsChanged();
+        }
+    };    
     public SyntopWindow() { 
         // Add action mapping to refresh the symbol table view
     	/*
@@ -98,6 +109,9 @@ public class SyntopWindow extends Window implements Bindable {
 */    	
         // Assign actions to add and remove symbol buttons
     	btnParse.setAction(applyTreeSpecificationTextAction);
+    	if (chkDebugDrawBoxText != null) chkDebugDrawBoxText.setAction(debugOptionsChangedAction);
+    	if (chkDebugDrawBoxNode != null) chkDebugDrawBoxNode.setAction(debugOptionsChangedAction);
+    	if (chkDebugDrawBoxFull != null) chkDebugDrawBoxFull.setAction(debugOptionsChangedAction);
  
     }
 
@@ -105,6 +119,17 @@ public class SyntopWindow extends Window implements Bindable {
     	String s = treeTextArea.getText();
 //    	String s = treeTextInput.getText();
     	mainView.getParseTopiary().setParseString(s);
+    }
+    
+    public void applyDebugOptionsChanged() {
+    	// TODO: Write the code here
+        System.out.print("Debug options changed\n");
+        if (chkDebugDrawBoxText != null) 
+        	mainView.setDrawTextBoundaries(chkDebugDrawBoxText.isSelected());
+        if (chkDebugDrawBoxText != null) 
+        	mainView.setDrawNodeBoundaries(chkDebugDrawBoxNode.isSelected());
+        if (chkDebugDrawBoxFull != null) 
+        	mainView.setDrawFullBoundaries(chkDebugDrawBoxFull.isSelected());
     }
 
 }

@@ -9,11 +9,21 @@ package org.kirill.syntopiary;
 public interface TopiaryViewListener {
 	
     public static class Adapter implements TopiaryViewListener {
-        public void topiaryViewChanged(TopiaryView topiaryView) {
+    	public void topiaryViewCosmeticOptionsChanged(TopiaryView topiaryView) {
+    	}
+        public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
         }
 
     }
 
-	public void topiaryViewChanged(TopiaryView topiaryView);
+    /**
+     * Changes that affect how things look, but do not affect the layout
+     */
+    public void topiaryViewCosmeticOptionsChanged(TopiaryView topiaryView);
+    
+    /**
+     * Changes that affect how nodes are layed out
+     */
+	public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView);
 
 }

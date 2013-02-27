@@ -50,5 +50,13 @@
                 </TablePane.Row>
             </TablePane>
         </TablePane.Row>
+		
+        <TablePane.Row height="-1">
+			<FlowPane styles="{padding:2}">
+				<Checkbox bxml:id="chkDebugDrawBoxText" buttonData="Box:Text"/>
+				<Checkbox bxml:id="chkDebugDrawBoxNode" buttonData="Box:Node"/>
+				<Checkbox bxml:id="chkDebugDrawBoxFull" buttonData="Box:Full"/>
+			</FlowPane>
+        </TablePane.Row>
     </TablePane>
 </syntopiary:SyntopWindow>	

@@ -10,23 +10,27 @@ import org.apache.pivot.wtk.WTKListenerList;
  */
 @DefaultProperty("image")
 public class TopiaryView extends Component {
-    /**
-     * Translates between tree and context data during data binding.
-     */
+	private boolean fDrawTextBoundaries = false;
+	private boolean fDrawNodeBoundaries = false;
+	private boolean fDrawFullBoundaries = false;
 
+    private ParseTopiary parseTopiary;
+	
     private static class TopiaryViewListenerList extends WTKListenerList<TopiaryViewListener>
         implements TopiaryViewListener {
         @Override
-        public void topiaryViewChanged(TopiaryView topiaryView) {
+        public void topiaryViewCosmeticOptionsChanged(TopiaryView topiaryView) {
+        	for (TopiaryViewListener listener : this) {
+        		listener.topiaryViewCosmeticOptionsChanged(topiaryView);
+        	}
+        }
+        public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
             for (TopiaryViewListener listener : this) {
-                listener.topiaryViewChanged(topiaryView);
+                listener.topiaryViewLayoutOptionsChanged(topiaryView);
             }
         }
 
     }
-
-    private ParseTopiary parseTopiary;
-
     private TopiaryViewListenerList topiaryViewListeners = new TopiaryViewListenerList();
 
 
@@ -39,19 +43,24 @@ public class TopiaryView extends Component {
         return parseTopiary;
     }
 
-
-    @Override
-    public void clear() {
-    	/*
-    	 * TODO: Implement this
-    	 */
-    }
-
-    /**
-     * Returns the image view listener list.
-     */
     public ListenerList<TopiaryViewListener> getTopiaryViewListeners() {
         return topiaryViewListeners;
     }
 
+    public boolean getDrawTextBoundaries() { return fDrawTextBoundaries; }
+    public void setDrawTextBoundaries(boolean newValue) { 
+    	fDrawTextBoundaries = newValue;
+    	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
+    }
+    public boolean getDrawNodeBoundaries() { return fDrawNodeBoundaries; }
+    public void setDrawNodeBoundaries(boolean newValue) { 
+    	fDrawNodeBoundaries = newValue;
+    	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
+    }
+    public boolean getDrawFullBoundaries() { return fDrawFullBoundaries; }
+    public void setDrawFullBoundaries(boolean newValue) { 
+    	fDrawFullBoundaries = newValue;
+    	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
+    }
+    
 }

@@ -23,9 +23,7 @@ import org.apache.pivot.wtk.skin.ComponentSkin;
 
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 
-public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener {
-	private boolean fDrawTextBoundaries = false;
-	private boolean fDrawNodeBoundaries = false;
+public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener, TopiaryViewListener {
 	private float nNodeXMargin = 4.0f;
 	private float nNodeYMargin = 2.0f;
 	private float minYNodeSpacing = 7.0f;
@@ -148,6 +146,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	
     	/* SkinNode */
 	    public void paint(Graphics2D graphics, float x, float y) {
+	        TopiaryView topiaryView = (TopiaryView)getComponent();
         	assert(parseNode!=null);
             String text = parseNode.getText();
 //	    	System.out.format("SkinNode.paint(). Node text: %s\n", text);
@@ -155,13 +154,14 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 //	        int width = getWidth();
 //	        int height = getHeight();
 
-            if (fDrawNodeBoundaries) {
+            
+            if (topiaryView.getDrawNodeBoundaries()) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.GREEN);
             	graphics.drawRect((int)(x + ((leftPadding>0)?leftPadding:0) ), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
             }
-            if (fDrawTextBoundaries) {
+            if (topiaryView.getDrawTextBoundaries()) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.RED);
@@ -245,6 +245,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         super.install(component);
 
         TopiaryView topiaryView = (TopiaryView)component;
+        topiaryView.getTopiaryViewListeners().add(this);
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
         parseTopiary.getParseTopiaryListeners().add(this);
 //        topiaryView.getTopiaryViewListeners().add(this);
@@ -407,6 +408,15 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	public void parseTopiaryChanged(ParseTopiary parseTopiary) {
 //		System.out.format("Received change notification: new string is %s...\n", parseTopiary.getParseString());
 		reBuildNodes();
+        invalidateComponent();
+	}
+    public void topiaryViewCosmeticOptionsChanged(TopiaryView topiaryView) {
+//    	System.out.print("TopiaryViewSkin.topiaryViewCosmeticOptionsChanged()\n");
+        invalidateComponent();
+    }
+    
+	public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
+//    	System.out.print("TopiaryViewSkin.topiaryViewLayoutOptionsChanged()\n");
         invalidateComponent();
 	}
 
