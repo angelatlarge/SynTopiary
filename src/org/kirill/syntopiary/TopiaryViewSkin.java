@@ -1,6 +1,6 @@
 package org.kirill.syntopiary;
 
-
+//import java.util.ArrayList;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -26,8 +26,10 @@ import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener {
 	private boolean fDrawTextBoundaries = true;
 	private boolean fDrawNodeBoundaries = true;
-	private float nNodeXMargin = 20.0f;
-	private float nNodeYMargin = 10.0f;
+	private float nNodeXMargin = 4.0f;
+	private float nNodeYMargin = 2.0f;
+	private float minYNodeSpacing = 7.0f;
+    private float lineSlope = 0.125f;
 	
 	
     private class SkinNode {
@@ -47,10 +49,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         private float fullWidth = 0;			// Width of this node + children
         private float fullHeight = 0;			// Height of this node + children
         
-        private float xPaddingSelf = 0;
-        private float xPaddingChildren = 0;
+        private float leftPadding = 0;			// Positive value: pad self, negative value = pad children
+
+		private float connectionPointX = 0;
+		private float childXSpacing = 0;
+		private float connectHeight = 0;
         
-		protected ArrayList<SkinNode> children = new ArrayList<SkinNode>(); 
+		protected java.util.ArrayList<SkinNode> children = new java.util.ArrayList<SkinNode>(); 
     	
     	public SkinNode(TopiaryViewSkin parentSkin, ParseTopiaryNode parseTopiaryNode) {
     		assert(parentSkin != null);
@@ -82,23 +87,49 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             
             if (text != null) {
                 int n = text.length();
-
                 if (n > 0) {
                     FontRenderContext fontRenderContext = Platform.getFontRenderContext();
-
                     appendLine(text, 0, text.length(), fontRenderContext);
                 }
             }
             nodeBoxWidth = nodeTextWidth + nNodeXMargin * 2;
             nodeBoxHeight = nodeTextHeight + nNodeYMargin * 2;
             
-            fullWidth = Math.max(nodeBoxWidth, childrenWidth);
-            xPaddingSelf = xPaddingChildren = Math.abs(nodeBoxWidth - childrenWidth)/2;
-            if (nodeBoxWidth>childrenWidth) 
-            	xPaddingSelf = 0;
-            else 
-            	xPaddingChildren = 0;
-            fullHeight = nodeBoxHeight + childrenHeight;
+			// Calculate the layout w.r.t. children
+			if (children.size() > 1) {
+				// At least two children
+				float connectLeft = children.get(0).connectionPointX;
+				float connectRight = children.get(children.size()-1).connectionPointX;
+				connectHeight = (connectRight-connectLeft)*lineSlope;
+				if (connectHeight < minYNodeSpacing) {
+					// Need to space out the children to maintain line slope
+					childXSpacing = (minYNodeSpacing / lineSlope) - (connectRight-connectLeft);
+					connectRight += childXSpacing;
+					childrenWidth += childXSpacing;
+					connectHeight = minYNodeSpacing;
+				} else {
+					// Children are spaced out enough: no extra spacing necessary
+					childXSpacing = 0;
+				}
+				connectionPointX = (connectLeft+connectRight)/2;
+				leftPadding = (connectionPointX - (nodeBoxWidth/2));
+			} else if (children.size() == 1) {
+				// One child
+				connectHeight = minYNodeSpacing;
+				connectionPointX = children.get(0).connectionPointX;
+				leftPadding = (connectionPointX - (nodeBoxWidth/2));
+			} else {
+				// No children
+				connectionPointX = nodeBoxWidth/2;
+				leftPadding = 0;
+				connectHeight = 0;
+			}
+            fullWidth = 
+            	Math.max(
+            		(leftPadding>0)?nodeBoxWidth+leftPadding:nodeBoxWidth, 
+            		(leftPadding<0)?childrenWidth-leftPadding:childrenWidth);		
+            fullHeight = nodeBoxHeight + connectHeight + childrenHeight;
+			connectionPointX = nodeBoxWidth/2;
             
         }
     	
@@ -128,13 +159,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.GREEN);
-            	graphics.drawRect((int)(x + xPaddingSelf), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
+            	graphics.drawRect((int)(x + ((leftPadding>0)?leftPadding:0) ), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
             }
             if (fDrawTextBoundaries) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.RED);
-            	graphics.drawRect((int)(x + nNodeXMargin + xPaddingSelf), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
+            	graphics.drawRect((int)(x + nNodeXMargin + ((leftPadding>0)?leftPadding:0)), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
             }
             
 	        // Draw the text
@@ -166,11 +197,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                if (graphics instanceof PrintGraphics) {
 	                    // Work-around for printing problem in applets
 	                    if (text != null && text.length() > 0) {
-	                        graphics.drawString(text, x + nNodeXMargin + xPaddingSelf, nLineY + ascent);
+	                        graphics.drawString(text, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
 	                    }
 	                }
 	                else {
-	                    graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + xPaddingSelf, nLineY + ascent);
+	                    graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
 	                }
 
 	                nLineY += textBounds.getHeight();
@@ -179,10 +210,15 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        }
 	        
             // Paint out the children
-	        float nChildStartX = x + xPaddingChildren;
+	        float nChildStartX = x + ((leftPadding<0)?-leftPadding:0);
+			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
-            	childNode.paint(graphics, nChildStartX, y+nodeBoxHeight);
-            	nChildStartX += childNode.fullWidth;
+            	// Paint the connection
+            	graphics.drawLine((int)(((leftPadding>0)?leftPadding:0)+connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
+				
+				// Paint the child
+            	childNode.paint(graphics, nChildStartX, nChildrenStartY);
+            	nChildStartX += childNode.fullWidth + ((children.size()>1)?childXSpacing/(children.size()-1):0);
             }
 	    }	    
     } // End of SkinNode 
