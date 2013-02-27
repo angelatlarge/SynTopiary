@@ -46,7 +46,7 @@ import javax.swing.filechooser.*;
  
 @SuppressWarnings("unused")
 public class SyntopWindow extends Window implements Bindable {
-	@BXML private TextArea treeTextArea = null;
+	@BXML private SyntopTextArea treeTextArea = null;
 //	@BXML private TextInput treeTextInput = null;
 	@BXML private TopiaryView mainView = null;
 	@BXML private PushButton btnParse = null;

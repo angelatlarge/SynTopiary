@@ -30,7 +30,7 @@
 
 				<TablePane.Row>
 					<BoxPane>
-						<TextArea bxml:id="treeTextArea" text="CP(C, TP(T, VP(V, DP(D, NP)"/>
+						<syntopiary:SyntopTextArea bxml:id="treeTextArea" text="CP(C, TP(T, VP(V, DP(D, NP)"/>
 					</BoxPane>
 					<BoxPane styles="{horizontalAlignment:'right'}">
 						<FillPane>

@@ -125,7 +125,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 					childXSpacing = 0;
 				}
 				connectionPointX = (connectLeft+connectRight)/2;
-				System.out.format("layout: 2+ children, lconn:%d rconn:%d, cspace: %d, connself:%d\n", (int)connectLeft, (int)connectRight, (int)childXSpacing, (int)connectionPointX);
+//				System.out.format("layout: 2+ children, lconn:%d rconn:%d, cspace: %d, connself:%d\n", (int)connectLeft, (int)connectRight, (int)childXSpacing, (int)connectionPointX);
 				leftPadding = (connectionPointX - (nodeBoxWidth/2));
 			} else if (children.size() == 1) {
 				// One child

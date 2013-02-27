@@ -10,7 +10,11 @@ import org.apache.pivot.wtk.Theme;
 
 /*
  * TODO: Enter should regenerate the trees
- * TODO: Save output in a usable format
+ * TODO: "ENTER" behavior in TestArea should refresh rather an place enter
+ * The TextAreaSkin.keyTyped(Component component, char character) method is responsible for processing keystrokes
+ * It calls the insertText() method of TextArea, which does the paragraph splitting
+ * 		
+ * TODO: Other export formats
 */ 
 
 @SuppressWarnings("unused")
