@@ -5,58 +5,57 @@
     xmlns:syntopiary="org.kirill.syntopiary"
 	>
 	
-    <TablePane styles="{padding:8, horizontalSpacing:6, verticalSpacing:6}">
+	<TablePane styles="{padding:8, horizontalSpacing:6, verticalSpacing:6}">
 	
-        <columns>
-            <TablePane.Column width="1*" />
-        </columns>
-		
-        <TablePane.Row height="-1">
-            <Label text="SynTopiary"
-                styles="{font:{size:14, bold:true}, verticalAlignment:'center'}" />
-        </TablePane.Row>
-		
-        <TablePane.Row height="1*">
+		<columns>
+			<TablePane.Column width="1*" />
+			</columns>
+			
+			<TablePane.Row height="-1">
+			<Label text="SynTopiary"
+				styles="{font:{size:14, bold:true}, verticalAlignment:'center'}" />
+			</TablePane.Row>
+			
+			<TablePane.Row height="1*">
 			<syntopiary:TopiaryView bxml:id="mainView"/>
-        </TablePane.Row>
-		
-		
-        <TablePane.Row height="-1">
-            <TablePane>
-                <columns>
-                    <TablePane.Column width="1*"/>
-                    <TablePane.Column width="-1"/>
-                </columns>
+			</TablePane.Row>
+			
+			
+		<TablePane.Row height="-1">
+			<TablePane>
+				<columns>
+					<TablePane.Column width="1*"/>
+					<TablePane.Column width="-1"/>
+				</columns>
 
-                <TablePane.Row>
-                    <BoxPane>
+				<TablePane.Row>
+					<BoxPane>
 						<TextArea bxml:id="treeTextArea" text="CP(C, TP(T, VP(V, DP(D, NP)"/>
-                    </BoxPane>
-                    <BoxPane styles="{horizontalAlignment:'right'}">
+					</BoxPane>
+					<BoxPane styles="{horizontalAlignment:'right'}">
 						<FillPane>
 							<PushButton bxml:id="btnParse" buttonData="Update"/>
 							<MenuButton buttonData="Generate">
 								<Menu>
 									<Menu.Section>
-										<Menu.Item buttonData="EMF"/>
-										<Menu.Item buttonData="EPS"/>
-										<Menu.Item buttonData="SVG"/>
+										<Menu.Item bxml:id="mniGenerateEMF" buttonData="EMF" />
+										<Menu.Item bxml:id="mniGenerateEPS" buttonData="EPS" />
+										<Menu.Item bxml:id="mniGenerateSVG" buttonData="SVG" action="generateSVG"/>
 									</Menu.Section>
 								</Menu>
 							</MenuButton>
 						</FillPane>
-					
-                    </BoxPane>
-                </TablePane.Row>
-            </TablePane>
-        </TablePane.Row>
-		
-        <TablePane.Row height="-1">
+					</BoxPane>
+				</TablePane.Row>
+			</TablePane>
+		</TablePane.Row>
+			
+		<TablePane.Row height="-1">
 			<FlowPane styles="{padding:2}">
 				<Checkbox bxml:id="chkDebugDrawBoxText" buttonData="Box:Text"/>
 				<Checkbox bxml:id="chkDebugDrawBoxNode" buttonData="Box:Node"/>
 				<Checkbox bxml:id="chkDebugDrawBoxFull" buttonData="Box:Full"/>
 			</FlowPane>
-        </TablePane.Row>
-    </TablePane>
+		</TablePane.Row>
+	</TablePane>
 </syntopiary:SyntopWindow>	

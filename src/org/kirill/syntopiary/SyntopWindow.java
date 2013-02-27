@@ -18,6 +18,7 @@ package org.kirill.syntopiary;
  */
  
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -56,6 +57,9 @@ import org.apache.pivot.wtk.TextArea;
 import org.apache.pivot.wtk.TextAreaContentListener;
 import org.apache.pivot.wtk.TextInput;
 import org.apache.pivot.wtk.Window;
+
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.*;
  
 @SuppressWarnings("unused")
 public class SyntopWindow extends Window implements Bindable {
@@ -65,12 +69,11 @@ public class SyntopWindow extends Window implements Bindable {
 	@BXML private PushButton btnParse = null;
 	@BXML private Checkbox chkDebugDrawBoxText = null;
 	@BXML private Checkbox chkDebugDrawBoxNode = null;
-    @BXML private Checkbox chkDebugDrawBoxFull = null;
+	@BXML private Checkbox chkDebugDrawBoxFull = null;
      
     
     private Action applyTreeSpecificationTextAction = new Action(true) {
         @Override
-        @SuppressWarnings("unchecked")
         public void perform(Component source) {
         	applyTreeSpecificationText();
         }
@@ -78,11 +81,11 @@ public class SyntopWindow extends Window implements Bindable {
     
     private Action debugOptionsChangedAction = new Action(true) {
         @Override
-        @SuppressWarnings("unchecked")
         public void perform(Component source) {
         	applyDebugOptionsChanged();
         }
     };    
+        
     public SyntopWindow() { 
         // Add action mapping to refresh the symbol table view
     	/*
@@ -91,6 +94,13 @@ public class SyntopWindow extends Window implements Bindable {
             commandModifier.getMask());
         getActionMappings().add(new ActionMapping(refreshKeystroke, refreshTableAction));
         */
+        Action.getNamedActions().put("generateSVG", new Action() {
+            @Override
+            public void perform(Component source) {
+            	generateSVGoutput();
+            }
+        });    	
+    	
     }
  
     @Override
@@ -130,6 +140,18 @@ public class SyntopWindow extends Window implements Bindable {
         	mainView.setDrawNodeBoundaries(chkDebugDrawBoxNode.isSelected());
         if (chkDebugDrawBoxFull != null) 
         	mainView.setDrawFullBoundaries(chkDebugDrawBoxFull.isSelected());
+    }
+    
+    public void generateSVGoutput() {
+		JFileChooser fc = new JFileChooser();
+        int returnVal = fc.showOpenDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            //This is where a real application would open the file.
+
+        } else {
+        	// Open command cancelled by user
+        }		
     }
 
 }

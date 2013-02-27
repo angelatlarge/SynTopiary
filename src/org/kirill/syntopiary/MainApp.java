@@ -7,7 +7,12 @@ import org.apache.pivot.wtk.DesktopApplicationContext;
 import org.apache.pivot.wtk.Display;
 import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
- 
+
+/*
+ * TODO: Enter should regenerate the trees
+ * TODO: Save output in a usable format
+*/ 
+
 @SuppressWarnings("unused")
 public class MainApp implements Application {
     private SyntopWindow window = null;
