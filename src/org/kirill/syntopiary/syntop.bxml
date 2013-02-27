@@ -4,71 +4,51 @@
     xmlns="org.apache.pivot.wtk"
     xmlns:syntopiary="org.kirill.syntopiary"
 	>
-    <Border>
-		<BoxPane bxml:id="boxPane2" orientation="vertical" styles="{fill:true}">
-			<syntopiary:TopiaryView bxml:id="mainView"/>
-			<Border styles="{padding:0, color:'#999999'}">
-<!--			
-					<SplitPane bxml:id="splitPane" orientation="vertical" splitRatio="0.8">
-						<left>
-						<TextArea bxml:id="treeTextArea" text="Tree(A, B)"/>
-						</left>
-						<right>
-						<PushButton bxml:id="btnParse" buttonData="Apply"/>
-						</right>
-					</SplitPane>
-					
-					 action="addRadioButton"/>
--->
-				<BoxPane orientation="vertical" styles="{padding:0, spacing:8, fill:true}">
-						<TextArea bxml:id="treeTextArea" text="Tree(A, B)"/>
-						<PushButton bxml:id="btnParse" buttonData="Apply"/>
-						<MenuButton buttonData="Generate">
-							<Menu>
-								<Menu.Section>
-									<Menu.Item buttonData="EMF"/>
-									<Menu.Item buttonData="EPS"/>
-									<Menu.Item buttonData="SVG"/>
-								</Menu.Section>
-							</Menu>
-						</MenuButton>
-						
-				</BoxPane>
-			</Border>
-		</BoxPane>
-    </Border>
-</syntopiary:SyntopWindow>	
-<!--	 
-						<FillPane bxml:id="fillPane">
-						</FillPane>
-						
-					<SplitPane bxml:id="splitPane" orientation="vertical" splitRatio="0.8">
-						<left>
-						</left>
-						<right>
-						</right>
-					</SplitPane>
-						
--->	
-<!--	 
-        <TablePane bxml:id="tablePane" styles="{verticalSpacing:1, showHorizontalGridLines:true, horizontalSpacing:1, showVerticalGridLines:true, fill:true}">
-            <columns>
-                <TablePane.Column width="300"/>
-			</columns>
- 
-            <TablePane.Row height="300*">
-				<syntopiary:TopiaryView bxml:id="mainView"/>
-            </TablePane.Row>
- 
-            <TablePane.Row height="50">
-				<BoxPane styles="{padding:4, verticalAlignment:'center'}">
-						<TextArea bxml:id="treeTextArea" text="Tree(A, B)" width="200"/>
-						<PushButton bxml:id="btnParse" buttonData="Apply"/>
-				</BoxPane>            
-            </TablePane.Row>
- 
-        </TablePane>
-    </Border>
 	
+    <TablePane styles="{padding:8, horizontalSpacing:6, verticalSpacing:6}">
+	
+        <columns>
+            <TablePane.Column width="1*" />
+        </columns>
+		
+        <TablePane.Row height="-1">
+            <Label text="SynTopiary"
+                styles="{font:{size:14, bold:true}, verticalAlignment:'center'}" />
+        </TablePane.Row>
+		
+        <TablePane.Row height="1*">
+			<syntopiary:TopiaryView bxml:id="mainView"/>
+        </TablePane.Row>
+		
+		
+        <TablePane.Row height="-1">
+            <TablePane>
+                <columns>
+                    <TablePane.Column width="1*"/>
+                    <TablePane.Column width="-1"/>
+                </columns>
+
+                <TablePane.Row>
+                    <BoxPane>
+						<TextArea bxml:id="treeTextArea" text="CP(C, TP(T, VP(V, DP(D, NP)"/>
+                    </BoxPane>
+                    <BoxPane styles="{horizontalAlignment:'right'}">
+						<FillPane>
+							<PushButton bxml:id="btnParse" buttonData="Update"/>
+							<MenuButton buttonData="Generate">
+								<Menu>
+									<Menu.Section>
+										<Menu.Item buttonData="EMF"/>
+										<Menu.Item buttonData="EPS"/>
+										<Menu.Item buttonData="SVG"/>
+									</Menu.Section>
+								</Menu>
+							</MenuButton>
+						</FillPane>
+					
+                    </BoxPane>
+                </TablePane.Row>
+            </TablePane>
+        </TablePane.Row>
+    </TablePane>
 </syntopiary:SyntopWindow>	
--->
