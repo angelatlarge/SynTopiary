@@ -37,11 +37,20 @@
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist}/lib"/>
 
+		<manifestclasspath property="jar.classpath"
+			jarfile="${dist}/lib/syntopiary.jar">
+				<classpath refid="master-classpath" />
+		</manifestclasspath>
+  			
+
 		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
 		<jar 
-			jarfile="${dist}/lib/syntopiary-${DSTAMP}.jar" 
+			jarfile="${dist}/lib/syntopiary.jar" 
 			basedir="${build}">
 			
+			<zipgroupfileset dir="lib" includes="*.jar"/>
+			<zipfileset dir="${build}"/>
+<!--	
 			<restrict>
 				<name name="**/*.class"/>
 				<archives>
@@ -50,7 +59,7 @@
 					</zips>
 				</archives>
 			</restrict>
-			
+-->			
 			<!-- 
 			<zipfileset includes="**/*.class" src="lib/main/some.jar"/>
 			-->
