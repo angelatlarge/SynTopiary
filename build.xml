@@ -58,6 +58,7 @@
 		<sleep seconds="1"/>
 		
 		<!-- Build a jar of everything -->
+		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
 		<jar 
 			jarfile="${dist}/syntopiary.jar" 
 			basedir="${build}"
@@ -71,9 +72,11 @@
 			</manifest>
 			
 		</jar>
-		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-		
+		<loadfile property="jarsignpassword" srcFile=".jarsign"/>
+		<signjar jar="${dist}/syntopiary.jar" alias="kirill" storepass="${jarsignpassword}" keystore="${basedir}/.keystore"/>
+<!--		
 		<signjar jar="${dist}/syntopiary.jar" alias="kirill" storepass="commodityencodingdollarmorality" keystore="${basedir}/.keystore"/>
+-->		
 	</target>
 
 	<target name="clean"
