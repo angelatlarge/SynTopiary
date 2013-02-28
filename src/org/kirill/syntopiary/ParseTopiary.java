@@ -66,7 +66,9 @@ public class ParseTopiary {
 					} while (bMoreChildren);
 				} else if (ch.equals(")")) { 
 					// End this node
-//					src.delete(idxTokenEnd, idxTokenEnd+1);
+					/* If we are a child that is being ended by a parenthesis, 
+					 * we want to leave the parenthesis to the parent, 
+					 * so that further text will not be our sibling */
 					break;
 				} else if (ch.equals(",")) {
 					// End this node
