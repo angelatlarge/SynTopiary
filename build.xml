@@ -40,15 +40,16 @@
 	<target name="dist" depends="compile"
 		description="generate the distribution" >
 		<!-- Create the distribution directory -->
-		<mkdir dir="${dist}/lib"/>
+		<mkdir dir="${dist}"/>
 
-		<copy todir="${dist}/lib">
+		<copy todir="${dist}">
 			<fileset dir="${deploy}">
 			</fileset>
 		</copy>
 
 
-		<jar jarfile="${dist}/lib/external-libs.jar">
+		<!-- Build a jar of all external jars -->
+		<jar jarfile="${dist}/external-libs.jar">
 			<zipgroupfileset dir="lib/">
 				<include name="**/*.jar"/>
 			</zipgroupfileset>
@@ -56,11 +57,12 @@
 		
 		<sleep seconds="1"/>
 		
+		<!-- Build a jar of everything -->
 		<jar 
-			jarfile="${dist}/lib/syntopiary.jar" 
+			jarfile="${dist}/syntopiary.jar" 
 			basedir="${build}"
 			>
-			<zipfileset src="${dist}/lib/external-libs.jar">
+			<zipfileset src="${dist}/external-libs.jar">
 				<exclude name="*"/>
 			</zipfileset>
 			
@@ -69,28 +71,9 @@
 			</manifest>
 			
 		</jar>
-<!--
-		<manifestclasspath property="jar.classpath"
-			jarfile="${dist}/lib/syntopiary.jar">
-				<classpath refid="master-classpath" />
-		</manifestclasspath>
-  			
--->
 		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-<!--		
-		<jar 
-			jarfile="${dist}/lib/syntopiary.jar" 
-			basedir="${build}"
-			>
-			
-			<zipgroupfileset dir="lib" includes="*.jar"/>
-			<zipfileset dir="${build}"/>
-			<manifest>
-				<attribute name="Main-Class" value="org.kirill.syntopiary.MainApp"/>
-			</manifest>
-		</jar>	
--->
-		<signjar jar="${dist}/lib/syntopiary.jar" alias="kirill" storepass="secret" keystore="${basedir}/.keystore"/>
+		
+		<signjar jar="${dist}/syntopiary.jar" alias="kirill" storepass="commodityencodingdollarmorality" keystore="${basedir}/.keystore"/>
 	</target>
 
 	<target name="clean"
@@ -99,4 +82,11 @@
 		<delete dir="${build}"/>
 		<delete dir="${dist}"/>
 	</target>
+	
+	<target name="upload">
+		<scp todir="kirills@athena.dialup.mit.edu:www/syntopiary">
+			<fileset dir="${dist}"/>
+		</scp>
+	</target>
 </project>
+

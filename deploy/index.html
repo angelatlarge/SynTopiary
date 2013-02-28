@@ -1,0 +1,135 @@
+<html>
+</html>
+<head>
+	<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>SynTopiary</title>
+</head>
+
+<style type="text/css">
+<!--
+
+H1,H2,H3{
+	//font-family: Tahoma, Geneva, sans-serif;
+	font-family: Trebuchet MS, Helvetica, sans-serif;
+}
+
+H1 {
+	font-size: 18px;
+}
+H2 {
+	font-size: 15px;
+	margin-bottom: 0px
+}
+
+body{
+	font-family: Palatino Linotype, Book Antiqua, Palatino, serif;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: normal;
+	background-color: #e6e186;
+	background-image:url('02154_standalonecleanwallpaper_1920x1080.jpg');
+	background-position:center center;
+	background-attachment:fixed;
+	background-repeat:no-repeat;
+	width: 450px;
+	margin: 50px;
+	margin-top: 30px;
+}
+
+table	{ border-style: none;}
+img	{ border-style: none; }
+
+table.pub {
+	border-spacing: 8px;
+}
+table.pub td { 
+	vertical-align: top;
+}
+
+P.credit {
+	font-family: Arial, Helvetica;
+	font-size: 10px;
+	color: #FFFFFF;
+}
+
+P.credit a:link, P.credit a:visited,  P.credit a:hover, P.credit a:active {
+	color:#EEEEEE;
+}      
+
+TD.pd { 
+	text-align: left;
+}
+-->
+</style>
+<body>
+<div class="content"><style type="text/css">
+            applet {
+                border: 1px solid #999999;
+            }
+        </style>
+		
+<H1>SynTopiary</H1>
+To make a syntactic tree:
+<ol>
+<li>Type a tree formula
+	<ul>
+		<li>parenthesis begin and children
+		<li>commas separate children
+		<li>use a backslash to make textual commas or parenthesis
+	</ul>
+<li>Hit enter
+<li>If it doesn't look good, go back to step 1
+<li>Click "Generate", select output file type, and save the file to your computer
+<li>Insert the file into your favorite word processor
+</ol>
+
+<script type="text/javascript" src="http://java.com/js/deployJava.js">
+</script>
+<script type="text/javascript">
+            
+            var attributes = {
+                code:"org.apache.pivot.wtk.BrowserApplicationContext$HostApplet",
+                width:"480",
+                height:"360"
+            };
+
+            
+            
+
+            
+            var libraries = [];
+            libraries.push("syntopiary.jar");
+            attributes.archive = libraries.join(",");
+
+            
+            var parameters = {
+                codebase_lookup:false,
+                application_class_name:'org.kirill.syntopiary.MainApp'
+            };
+
+            
+            var javaArguments = ["-Dsun.awt.noerasebackground=true",
+                "-Dsun.awt.erasebackgroundonresize=true"];
+
+            
+
+            parameters.java_arguments = javaArguments.join(" ");
+
+            
+            
+                var startupProperties = [];
+                
+                    startupProperties.push("language=en");
+                
+                parameters.startup_properties = startupProperties.join("&");
+            
+
+            deployJava.runApplet(attributes, parameters, "1.6");
+        
+</script>
+		
+<P class="credit">image: <a href="http://interfacelift.com/">http://interfacelift.com/</a> via <a href="http://tymotion.wordpress.com/">
+TyMotion's Blog</a>
+</div>
+</body>
