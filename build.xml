@@ -6,6 +6,7 @@
 	<property name="src" location="src"/>
 	<property name="build" location="build"/>
 	<property name="dist"  location="dist"/>
+	<property name="deploy"  location="deploy"/>
 
 	<path id="master-classpath">
 		<fileset dir="lib">
@@ -30,6 +31,10 @@
 		<javac srcdir="${src}" destdir="${build}">
 			<classpath refid="master-classpath"/>
 		</javac>
+		
+		<copy file="${src}/org/kirill/syntopiary/syntop.bxml" todir="${build}/org/kirill/syntopiary"/>
+		<copy file="${src}/org/kirill/syntopiary/syntop.bxml" todir="${build}"/>
+
 	</target>
 
 	<target name="dist" depends="compile"
@@ -37,12 +42,18 @@
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist}/lib"/>
 
+		<copy todir="${dist}/lib">
+			<fileset dir="${deploy}">
+			</fileset>
+		</copy>
+
+<!--
 		<manifestclasspath property="jar.classpath"
 			jarfile="${dist}/lib/syntopiary.jar">
 				<classpath refid="master-classpath" />
 		</manifestclasspath>
   			
-
+-->
 		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
 		<jar 
 			jarfile="${dist}/lib/syntopiary.jar" 
@@ -66,7 +77,9 @@
 			<manifest>
 				<attribute name="Main-Class" value="org.kirill.syntopiary.MainApp"/>
 			</manifest>
-		</jar>		
+		</jar>	
+
+		<signjar jar="${dist}/lib/syntopiary.jar" alias="kirill" storepass="secret" keystore="${basedir}/.keystore"/>
 	</target>
 
 	<target name="clean"
