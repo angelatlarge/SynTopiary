@@ -30,13 +30,12 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Copy and paste
- * TODO: Copyright notices
+ * TODO: Fix password issues in build.xml
+ * TODO: More copy and paste formats
+ * TODO: Other export formats
  * TODO: In ternary branching, the middle lines needs to be vertical
  * TODO: Options parsing
  * TODO: Text formatting
- * TODO: github
- * TODO: Other export formats
  * TODO: Caret cursor for the text box
  * TODO: Hat option
  * 
