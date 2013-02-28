@@ -30,14 +30,17 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Fix password issues in build.xml
- * TODO: More copy and paste formats
- * TODO: Other export formats
+ * TODO: EPS copy
+ * TODO: Test powerpoint paste
+ * TODO: EPS file save
+ * TODO: Copy and paste text in the tree specification
  * TODO: In ternary branching, the middle lines needs to be vertical
+ * TODO: EMF copy
+ * TODO: EMF paste
  * TODO: Options parsing
  * TODO: Text formatting
  * TODO: Caret cursor for the text box
- * TODO: Hat option
+ * TODO: Hat drawing
  * 
 */ 
 
