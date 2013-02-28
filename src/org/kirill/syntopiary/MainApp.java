@@ -9,8 +9,16 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
+ * TODO: Copy and paste
+ * TODO: Deploy!
+ * TODO: Copyright notices
+ * TODO: github
  * TODO: Parsing: comma after close parenthesis doesn't behave correctly
  * TODO: Other export formats
+ * TODO: Box border for the text input
+ * TODO: Caret cursor for the text box
+ * TODO: Hat option
+ * 
 */ 
 
 @SuppressWarnings("unused")

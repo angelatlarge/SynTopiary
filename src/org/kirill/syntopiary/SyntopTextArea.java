@@ -23,10 +23,10 @@ public class SyntopTextArea extends TextArea {
     }
     
     public void insertText(CharSequence text, int index) {
-    	System.out.format("Got character: \"%s\"\n", text.toString()); 
+//    	System.out.format("Got character: \"%s\"\n", text.toString()); 
     	if (text.equals("\n")) {
     		// Enter processing
-        	System.out.format("Notifying listeners\n"); 
+//        	System.out.format("Notifying listeners\n"); 
     		syntopTextAreaListenerList.enterPressed(this);
     	} else {
     		super.insertText(text, index);

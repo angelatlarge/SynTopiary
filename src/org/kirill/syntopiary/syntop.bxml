@@ -11,11 +11,12 @@
 			<TablePane.Column width="1*" />
 			</columns>
 			
+<!--			
 			<TablePane.Row height="-1">
 			<Label text="SynTopiary"
-				styles="{font:{size:14, bold:true}, verticalAlignment:'center'}" />
+				styles="{font:{size:14, bold:true}, verticalAlignment:'center', color:'#ff0000'}" />
 			</TablePane.Row>
-			
+-->			
 			<TablePane.Row height="1*">
 			<syntopiary:TopiaryView bxml:id="mainView"/>
 			</TablePane.Row>
@@ -28,13 +29,23 @@
 					<TablePane.Column width="-1"/>
 				</columns>
 
-				<TablePane.Row>
-					<BoxPane>
-						<syntopiary:SyntopTextArea bxml:id="treeTextArea" text="CP(C, TP(T, VP(V, DP(D, NP)"/>
-					</BoxPane>
-					<BoxPane styles="{horizontalAlignment:'right'}">
+				<TablePane.Row height="50">
+					<FillPane>
+						<Border>
+						<syntopiary:SyntopTextArea bxml:id="treeTextArea" text="CP(C, TP(DP, (T, VP(V, DP(D, NP)"/>
+						</Border>
+					</FillPane>
+					<BoxPane styles="{horizontalAlignment:'right', padding:5}">
 						<FillPane>
 							<PushButton bxml:id="btnParse" buttonData="Update"/>
+						</FillPane>
+					</BoxPane>
+				</TablePane.Row>
+			</TablePane>
+		</TablePane.Row>
+			
+		<TablePane.Row height="-1">
+			<FlowPane styles="{padding:2}">
 							<MenuButton buttonData="Generate">
 								<Menu>
 									<Menu.Section>
@@ -44,14 +55,6 @@
 									</Menu.Section>
 								</Menu>
 							</MenuButton>
-						</FillPane>
-					</BoxPane>
-				</TablePane.Row>
-			</TablePane>
-		</TablePane.Row>
-			
-		<TablePane.Row height="-1">
-			<FlowPane styles="{padding:2}">
 				<Checkbox bxml:id="chkDebugDrawBoxText" buttonData="Box:Text"/>
 				<Checkbox bxml:id="chkDebugDrawBoxNode" buttonData="Box:Node"/>
 				<Checkbox bxml:id="chkDebugDrawBoxFull" buttonData="Box:Full"/>
