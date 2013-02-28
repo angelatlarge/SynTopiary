@@ -1,5 +1,6 @@
 package org.kirill.syntopiary;
 
+import java.awt.datatransfer.Clipboard;
 import java.io.File;
 
 import org.apache.pivot.beans.DefaultProperty;
@@ -36,7 +37,11 @@ public class TopiaryView extends Component {
                 listener.topiaryViewOutputRequestSVG(topiaryView, file);
             }
         }
-
+        public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard) {
+            for (TopiaryViewListener listener : this) {
+                listener.topiaryViewOutputRequestSVG(topiaryView, clipboard);
+            }
+        }
     }
     private TopiaryViewListenerList topiaryViewListeners = new TopiaryViewListenerList();
 
@@ -71,5 +76,8 @@ public class TopiaryView extends Component {
     }
     public void generateSVG( File file ) {
     	topiaryViewListeners.topiaryViewOutputRequestSVG(this, file);
+    }
+    public void copyAsSVG( Clipboard clipboard ) {
+    	topiaryViewListeners.topiaryViewOutputRequestSVG(this, clipboard);
     }
 }

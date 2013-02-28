@@ -49,9 +49,22 @@
 							<MenuButton buttonData="Generate">
 								<Menu>
 									<Menu.Section>
+<!--									
 										<Menu.Item bxml:id="mniGenerateEMF" buttonData="EMF" />
 										<Menu.Item bxml:id="mniGenerateEPS" buttonData="EPS" />
+-->										
 										<Menu.Item bxml:id="mniGenerateSVG" buttonData="SVG" action="generateSVG"/>
+									</Menu.Section>
+								</Menu>
+							</MenuButton>
+							<MenuButton buttonData="Copy As">
+								<Menu>
+									<Menu.Section>
+<!--									
+										<Menu.Item bxml:id="mniCopyAsEMF" buttonData="EMF" />
+										<Menu.Item bxml:id="mniCopyAsEPS" buttonData="EPS" />
+-->										
+										<Menu.Item bxml:id="mniCopyAsSVG" buttonData="SVG" action="copyAsSVG"/>
 									</Menu.Section>
 								</Menu>
 							</MenuButton>

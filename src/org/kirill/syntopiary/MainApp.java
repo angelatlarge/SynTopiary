@@ -11,6 +11,9 @@ import org.apache.pivot.wtk.Theme;
 /*
  * TODO: Copy and paste
  * TODO: Copyright notices
+ * TODO: In ternary branching, the middle lines needs to be vertical
+ * TODO: Options parsing
+ * TODO: Text formatting
  * TODO: github
  * TODO: Other export formats
  * TODO: Caret cursor for the text box

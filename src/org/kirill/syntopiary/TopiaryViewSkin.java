@@ -6,13 +6,17 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.PrintGraphics;
+import java.awt.datatransfer.Clipboard;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -463,9 +467,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 //    	System.out.print("TopiaryViewSkin.topiaryViewLayoutOptionsChanged()\n");
         invalidateComponent();
 	}
+	
     public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
     	try {
-	    	// TODO: Write this
 	        // Get a DOMImplementation.
 	        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
 	
@@ -480,10 +484,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        this.paint(svgGenerator);
 	        
 	        // Save to file
-	        FileOutputStream streamOut;
+	        FileOutputStream streamOut = null;
+	        Writer writerOut = null;
 	    	try {
 				streamOut = new FileOutputStream(file);
-		        Writer writerOut = new OutputStreamWriter(streamOut, "UTF-8");
+		        writerOut = new OutputStreamWriter(streamOut, "UTF-8");
 		        boolean useCSS = true; // we want to use CSS style attributes
 		        svgGenerator.stream(writerOut, useCSS);        
 			} catch (FileNotFoundException e) {
@@ -498,6 +503,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 				// TODO Auto-generated catch block
 				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
 				e.printStackTrace();
+			} finally {
+				if (writerOut != null) writerOut.close();
+				if (streamOut != null) streamOut.close();
 			}
 	    	
 	    	svgGenerator = null;
@@ -508,5 +516,59 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 			e.printStackTrace();
     	}
     }
+    
+    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard) {
+        // Get a DOMImplementation.
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+
+        // Create an instance of the SVG Generator.
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+    	
+        // Paint onto the generator
+        this.paint(svgGenerator);
+
+        // Create an output stream
+        ByteArrayOutputStream streamOut = new ByteArrayOutputStream();
+        
+        // Write to the output stream
+        Writer writerOut = null;
+        try{
+			try {
+				writerOut = new OutputStreamWriter(streamOut, "UTF-8");
+		        boolean useCSS = true; // we want to use CSS style attributes
+				svgGenerator.stream(writerOut, useCSS);
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				Alert.alert(MessageType.INFO, String.format("Could not copy as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			} catch (SVGGraphics2DIOException e) {
+				Alert.alert(MessageType.INFO, String.format("Could not copy as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			}        
+        } finally {
+	        // Close everything 
+			try {
+				if (writerOut != null)writerOut.close();
+				if (streamOut != null) streamOut.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        
+		// Create an input stream
+        ByteArrayInputStream streamIn = new ByteArrayInputStream(streamOut.toByteArray());
+
+        // Generate the selection object
+        TopiarySelection topiarySelection = new TopiarySelection(streamIn);
+        
+        // Set clipboard contents
+        clipboard.setContents(topiarySelection, topiarySelection);
+    }
+    
 
 }

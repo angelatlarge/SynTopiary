@@ -1,6 +1,9 @@
 package org.kirill.syntopiary;
  
 import java.awt.Desktop;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -85,10 +88,16 @@ public class SyntopWindow extends Window implements Bindable {
             commandModifier.getMask());
         getActionMappings().add(new ActionMapping(refreshKeystroke, refreshTableAction));
         */
-        Action.getNamedActions().put("generateSVG", new Action() {
+    	Action.getNamedActions().put("generateSVG", new Action() {
+    		@Override
+    		public void perform(Component source) {
+    			generateSVGoutput();
+    		}
+    	});    	
+        Action.getNamedActions().put("copyAsSVG", new Action() {
             @Override
             public void perform(Component source) {
-            	generateSVGoutput();
+            	copyAsSVG();
             }
         });    	
     	
@@ -146,6 +155,11 @@ public class SyntopWindow extends Window implements Bindable {
         } else {
         	// Open command cancelled by user
         }		
+    }
+    
+    public void copyAsSVG() {
+    	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        mainView.copyAsSVG(clipboard);
     }
 
 }

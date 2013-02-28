@@ -1,4 +1,5 @@
 package org.kirill.syntopiary;
+import java.awt.datatransfer.Clipboard;
 import java.io.File;
 
 
@@ -16,7 +17,8 @@ public interface TopiaryViewListener {
     	}
         public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
         }
-
+        public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard) {
+        }
     }
 
     /**
@@ -29,8 +31,13 @@ public interface TopiaryViewListener {
      */
 	public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView);
 
+	/**
+	 * Request for SVG file output
+	 */
+	public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file);
+	
     /**
-     * Request for file output
+     * Request for SVG file to be placed on the clipboard
      */
-    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file);
+    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard);
 }
