@@ -135,7 +135,10 @@ public class SyntopWindow extends Window implements Bindable {
     
     public void generateSVGoutput() {
 		JFileChooser fc = new JFileChooser();
-        int returnVal = fc.showOpenDialog(null);
+    	FileNameExtensionFilter filter = new FileNameExtensionFilter("SVG files", "svg");
+	    fc.setFileFilter(filter);
+//	    fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        int returnVal = fc.showSaveDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             //This is where a real application would open the file.

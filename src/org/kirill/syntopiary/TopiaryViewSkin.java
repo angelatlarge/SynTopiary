@@ -19,10 +19,12 @@ import java.io.Writer;
 import java.text.StringCharacterIterator;
 
 import org.apache.pivot.collections.ArrayList;
+import org.apache.pivot.wtk.Alert;
 import org.apache.pivot.wtk.Bounds;
 import org.apache.pivot.wtk.Component;
 import org.apache.pivot.wtk.Dimensions;
 import org.apache.pivot.wtk.GraphicsUtilities;
+import org.apache.pivot.wtk.MessageType;
 import org.apache.pivot.wtk.Platform;
 import org.apache.pivot.wtk.Theme;
 import org.apache.pivot.wtk.skin.ComponentSkin;
@@ -462,37 +464,49 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         invalidateComponent();
 	}
     public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
-    	// TODO: Write this
-        // Get a DOMImplementation.
-        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
-
-        // Create an instance of org.w3c.dom.Document.
-        String svgNS = "http://www.w3.org/2000/svg";
-        Document document = domImpl.createDocument(svgNS, "svg", null);
-
-        // Create an instance of the SVG Generator.
-        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-    	
-        // Paint onto the generator
-        this.paint(svgGenerator);
-        
-        // Save to file
-        FileOutputStream streamOut;
     	try {
-			streamOut = new FileOutputStream(file);
-	        Writer writerOut = new OutputStreamWriter(streamOut, "UTF-8");
-	        boolean useCSS = true; // we want to use CSS style attributes
-	        svgGenerator.stream(writerOut, useCSS);        
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+	    	// TODO: Write this
+	        // Get a DOMImplementation.
+	        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+	
+	        // Create an instance of org.w3c.dom.Document.
+	        String svgNS = "http://www.w3.org/2000/svg";
+	        Document document = domImpl.createDocument(svgNS, "svg", null);
+	
+	        // Create an instance of the SVG Generator.
+	        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+	    	
+	        // Paint onto the generator
+	        this.paint(svgGenerator);
+	        
+	        // Save to file
+	        FileOutputStream streamOut;
+	    	try {
+				streamOut = new FileOutputStream(file);
+		        Writer writerOut = new OutputStreamWriter(streamOut, "UTF-8");
+		        boolean useCSS = true; // we want to use CSS style attributes
+		        svgGenerator.stream(writerOut, useCSS);        
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			} catch (SVGGraphics2DIOException e) {
+				// TODO Auto-generated catch block
+				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			}
+	    	
+	    	svgGenerator = null;
+	    	streamOut = null;
+	    	
+    	} catch (Exception e) {
+			Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
 			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SVGGraphics2DIOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    	}
     }
 
 }

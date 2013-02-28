@@ -51,13 +51,24 @@ public class ParseTopiary {
 					boolean bMoreChildren;
 					do {
 						children.add(new ParseTopiaryNode(src));
-						bMoreChildren = ((src.length()>0) && src.substring(0, 1).equals(","));
-						if (bMoreChildren) {
-							src.delete(0, 1);
+//						System.out.format("Ended a child call. src=\"%s\"\n", src);
+						bMoreChildren = false;
+						if (src.length()>0) {
+							if (src.substring(0, 1).equals(",")) {
+								bMoreChildren = true;
+								src.delete(0, 1);
+							} else { 
+								if (src.substring(0, 1).equals(")")) {
+									src.delete(0, 1);
+								}
+							}
 						}
 					} while (bMoreChildren);
-					
-				} else if (ch.equals(")") || ch.equals(",")) {
+				} else if (ch.equals(")")) { 
+					// End this node
+//					src.delete(idxTokenEnd, idxTokenEnd+1);
+					break;
+				} else if (ch.equals(",")) {
 					// End this node
 					break;
 				} else {
@@ -131,7 +142,7 @@ public class ParseTopiary {
 		} else {
 			root = null;
 		}
-		System.out.format("Notifying listeners of changes: new string is %s...\n", parseString);
+//		System.out.format("Notifying listeners of changes: new string is %s...\n", parseString);
 		parseTopiaryListeners.parseTopiaryChanged(this);
 	}
 	
