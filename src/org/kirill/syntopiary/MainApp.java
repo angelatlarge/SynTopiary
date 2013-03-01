@@ -30,9 +30,9 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
+ * TODO: Feedback on the web page
+ * TODO: Unit tests, especially for EPS generation
  * TODO: EPS copy
- * TODO: Test powerpoint paste
- * TODO: EPS file save
  * TODO: Copy and paste text in the tree specification
  * TODO: In ternary branching, the middle lines needs to be vertical
  * TODO: EMF copy
