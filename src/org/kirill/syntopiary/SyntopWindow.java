@@ -121,6 +121,12 @@ public class SyntopWindow extends Window implements Bindable {
             	copyAsSVG();
             }
         });    	
+    	Action.getNamedActions().put("generateEPS", new Action() {
+    		@Override
+    		public void perform(Component source) {
+    			generateEPSoutput();
+    		}
+    	});    	
     	
     }
  
@@ -183,4 +189,19 @@ public class SyntopWindow extends Window implements Bindable {
         mainView.copyAsSVG(clipboard);
     }
 
+    public void generateEPSoutput() {
+		JFileChooser fc = new JFileChooser();
+    	FileNameExtensionFilter filter = new FileNameExtensionFilter("EPS files", "eps");
+	    fc.setFileFilter(filter);
+//	    fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        int returnVal = fc.showSaveDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            //This is where a real application would open the file.
+            mainView.generateEPS(file);
+        } else {
+        	// Open command cancelled by user
+        }		
+    }
+    
 }

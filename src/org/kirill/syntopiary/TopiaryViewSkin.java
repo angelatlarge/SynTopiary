@@ -258,8 +258,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 //	                float x = padding.left;
 //	                float x = 0;
 
-	                if (graphics instanceof PrintGraphics) {
-	                    // Work-around for printing problem in applets
+	                if ((graphics instanceof LEPSGraphics2D) || (graphics instanceof PrintGraphics) ){
+	                    // Work-around for printing problem in applets, 
+	                	// and LEPSGraphics2D does not know about GlyphVectors
 	                    if (text != null && text.length() > 0) {
 	                        graphics.drawString(text, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
 	                    }
@@ -513,15 +514,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		        boolean useCSS = true; // we want to use CSS style attributes
 		        svgGenerator.stream(writerOut, useCSS);        
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
 				e.printStackTrace();
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
 				e.printStackTrace();
 			} catch (SVGGraphics2DIOException e) {
-				// TODO Auto-generated catch block
 				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
 				e.printStackTrace();
 			} finally {
@@ -563,7 +561,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		        boolean useCSS = true; // we want to use CSS style attributes
 				svgGenerator.stream(writerOut, useCSS);
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
 				Alert.alert(MessageType.INFO, String.format("Could not copy as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
 				e.printStackTrace();
 			} catch (SVGGraphics2DIOException e) {
@@ -576,7 +573,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 				if (writerOut != null)writerOut.close();
 				if (streamOut != null) streamOut.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }
@@ -589,6 +585,45 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         
         // Set clipboard contents
         clipboard.setContents(topiarySelection, topiarySelection);
+    }
+    
+    public void topiaryViewOutputRequestEPS(TopiaryView topiaryView, File file) {
+    	try {
+	        // Create an instance of the SVG Generator.
+	        LEPSGraphics2D epsGenerator = new LEPSGraphics2D();
+	    	
+	        // Paint onto the generator
+	        this.paint(epsGenerator);
+	        
+	        // Save to file
+	        FileOutputStream streamOut = null;
+	        Writer writerOut = null;
+	    	try {
+				streamOut = new FileOutputStream(file);
+		        writerOut = new OutputStreamWriter(streamOut, "UTF-8");
+		        boolean useCSS = true; // we want to use CSS style attributes
+		        epsGenerator.stream(writerOut);        
+			} catch (FileNotFoundException e) {
+				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			} catch (SVGGraphics2DIOException e) {
+				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+				e.printStackTrace();
+			} finally {
+				if (writerOut != null) writerOut.close();
+				if (streamOut != null) streamOut.close();
+			}
+	    	
+	    	epsGenerator = null;
+	    	streamOut = null;
+	    	
+    	} catch (Exception e) {
+			Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
+			e.printStackTrace();
+    	}
     }
     
 

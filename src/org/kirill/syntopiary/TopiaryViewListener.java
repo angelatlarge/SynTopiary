@@ -38,6 +38,8 @@ public interface TopiaryViewListener {
         }
         public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard) {
         }
+    	public void topiaryViewOutputRequestEPS(TopiaryView topiaryView, File file) {
+    	}
     }
 
     /**
@@ -59,4 +61,11 @@ public interface TopiaryViewListener {
      * Request for SVG file to be placed on the clipboard
      */
     public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard);
+    
+	/**
+	 * Request for EPS file output
+	 */
+	public void topiaryViewOutputRequestEPS(TopiaryView topiaryView, File file);
+	
+    
 }

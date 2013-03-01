@@ -54,8 +54,13 @@ public class TopiaryView extends Component {
             }
         }
         public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
+        	for (TopiaryViewListener listener : this) {
+        		listener.topiaryViewOutputRequestSVG(topiaryView, file);
+        	}
+        }
+        public void topiaryViewOutputRequestEPS(TopiaryView topiaryView, File file) {
             for (TopiaryViewListener listener : this) {
-                listener.topiaryViewOutputRequestSVG(topiaryView, file);
+                listener.topiaryViewOutputRequestEPS(topiaryView, file);
             }
         }
         public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard) {
@@ -100,5 +105,8 @@ public class TopiaryView extends Component {
     }
     public void copyAsSVG( Clipboard clipboard ) {
     	topiaryViewListeners.topiaryViewOutputRequestSVG(this, clipboard);
+    }
+    public void generateEPS( File file ) {
+    	topiaryViewListeners.topiaryViewOutputRequestEPS(this, file);
     }
 }
