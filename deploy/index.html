@@ -5,7 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>SynTopiary</title>
 </head>
-
+<script src="http://cdn.jquerytools.org/1.2.7/full/jquery.tools.min.js"></script>
 <style type="text/css">
 <!--
 
@@ -57,12 +57,127 @@ P.notice a:link, P.notice a:visited,  P.notice a:hover, P.notice a:active {
 	color:#EEEEEE;
 }      
 
+P.smallblack {
+	font-family: Arial, Helvetica;
+	font-size: 10px;
+	color: #000000;
+}
+
+P.smallblack a:link, P.smallblack a:visited,  P.smallblack a:hover, P.smallblack a:active {
+	color:#000000;
+}      
+
 TD.pd { 
 	text-align: left;
 }
+
+.simple_overlay {
+ 
+    /* must be initially hidden */
+    display:none;
+ 
+    /* place overlay on top of other elements */
+    z-index:10000;
+ 
+    /* styling */
+    background-color:#333;
+	color: #ffffff;
+ 
+    width:400px;
+    min-height:200px;
+    border:1px solid #666;
+ 
+	padding: 0.5em 0.5em 0.5em 0.5em;
+	
+    /* CSS3 styling for latest browsers */
+    -moz-box-shadow:0 0 90px 5px #000;
+    -webkit-box-shadow: 0 0 90px #000;
+}
+ 
+.simple_overlay ul, .simple_overlay p {
+	font-family: Arial, Helvetica;
+	font-size: 12px;
+}
+
+#comp_ok 		{list-style-image:url('green_bullet.png') ;}
+#comp_part    	{list-style-image:url('yellow_bullet.png') ;}
+#comp_no        {list-style-image:url('red_bullet.png') ;}
+
+/* close button positioned on upper right corner */
+.simple_overlay .close {
+    background-image:url(close.png);
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
+}
+
+.details {
+position:absolute;
+top:15px;
+right:15px;
+font-size:11px;
+color:#fff;
+width:150px;
+}
+
+.details h3 {
+color:#aba;
+font-size:15px;
+}
+  
 -->
 </style>
 <body>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+      $("img[rel]").overlay();
+      $("a[rel]").overlay();
+    });
+</script>
+
+
+</div>
+<div class="simple_overlay" id="ovrCompatibility">
+<h2>known compatibility status</h2>
+<p>SVG paste
+	<ul>
+	<li id="comp_part">Inkscape 0.48 on Ubuntu 12.10, both app and applet: text appears, lines do not
+	<li id="comp_no">Adobe illustrator CS3 Windows XP
+	<li id="comp_no">Microsoft Powerpoint 2000 on Windows XP
+	<li id="comp_no">LibreOffice impress on Ubuntu 12.10: <br>not sure whether it is Impress problem or something else
+	</ul>
+<p>SVG save as
+	<ul>
+	<li id="comp_no">Microsoft Powerpoint 2000 on Windows XP: no SVG support
+	<li id="comp_part">LibreOffice impress on Ubuntu 12.10: bottom of the SVG file is cut off
+	<li id="comp_ok">Adobe illustrator CS3 Windows XP
+	</ul>
+<p>EPS save as
+	<ul>
+	<li id="comp_ok">Inkscape 0.48 on Ubuntu 12.10 as applet
+	<li id="comp_no">LibreOffice impress on Ubuntu 12.10
+	</ul>
+	
+	
+<!--
+<dl> 
+<dd><img src="checkmark.gif" width="26" height="14">List item text</dd>
+<dd><img src="checkmark.gif" width="26" height="14">List item text</dd>
+</dl> 
+
+  <div class="details">
+    <h3>The Barcelona Pavilion</h3>
+    <h4>Barcelona, Spain</h4>
+    <p>The content ...</p>
+  </div>
+-->  
+</div>
+
+
 <div class="content"><style type="text/css">
             applet {
                 border: 1px solid #999999;
@@ -84,6 +199,27 @@ To make a syntactic tree:
 <li>Insert the file into your favorite word processor
 </ol>
 
+<P class="smallblack">
+	<a href="#" rel="#ovrCompatibility">[compatibility]</a>&nbsp;
+<!--	
+	<a href="#" rel="#mies1">[feedback]</a>
+-->	
+</P>
+<!--
+<P class="smallblack">
+	<a href="#" rel="#mies1">link</a>
+
+<P class="smallblack">
+	<span id="triggers" rel="#mies1">foo</span>
+	<span id="triggers" rel="#mies1">bar</span>
+	
+<P class="smallblack" rel="#mies1">boobar</p>
+	
+<P class="smallblack">	<img src="close.png" rel="#mies1" />
+
+<div rel="#mies1">hello</div>
+-->
+<P>
 <script type="text/javascript" src="http://java.com/js/deployJava.js">
 </script>
 <script type="text/javascript">
@@ -134,5 +270,4 @@ via <a href="http://tymotion.wordpress.com/">TyMotion's Blog</a>.
 <br>code: <a href="https://github.com/angelatlarge/SynTopiary">https://github.com/angelatlarge/SynTopiary</a>
 <P class="notice">Issues? Problems? Suggestions? email kirill plus the letter s at this institution point edu.
 
-</div>
 </body>
