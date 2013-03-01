@@ -30,7 +30,6 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Feedback on the web page
  * TODO: Unit tests, especially for EPS generation
  * TODO: EPS copy
  * TODO: Copy and paste text in the tree specification
@@ -41,6 +40,7 @@ import org.apache.pivot.wtk.Theme;
  * TODO: Text formatting
  * TODO: Caret cursor for the text box
  * TODO: Hat drawing
+ * TODO: Non-vector file export?
  * 
 */ 
 
