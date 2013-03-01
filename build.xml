@@ -6,7 +6,11 @@
 	<property name="src" location="src"/>
 	<property name="build" location="build"/>
 	<property name="dist"  location="dist"/>
+	<property name="dist_prog"  location="dist/syntopiary"/>
+	<property name="dist_scripts"  location="dist/scripts"/>
 	<property name="deploy"  location="deploy"/>
+	<property name="deploy_prog"  location="deploy/syntopiary"/>
+	<property name="deploy_scripts"  location="deploy/scripts"/>
 
 	<path id="master-classpath">
 		<fileset dir="lib">
@@ -41,15 +45,21 @@
 		description="generate the distribution" >
 		<!-- Create the distribution directory -->
 		<mkdir dir="${dist}"/>
+		<mkdir dir="${dist_prog}"/>
+		<mkdir dir="${dist_scripts}"/>
 
-		<copy todir="${dist}">
-			<fileset dir="${deploy}">
+		<copy todir="${dist_prog}">
+			<fileset dir="${deploy_prog}">
 			</fileset>
 		</copy>
 
+		<copy todir="${dist_scripts}">
+			<fileset dir="${deploy_scripts}">
+			</fileset>
+		</copy>
 
 		<!-- Build a jar of all external jars -->
-		<jar jarfile="${dist}/external-libs.jar">
+		<jar jarfile="${dist_prog}/external-libs.jar">
 			<zipgroupfileset dir="lib/">
 				<include name="**/*.jar"/>
 			</zipgroupfileset>
@@ -60,10 +70,10 @@
 		<!-- Build a jar of everything -->
 		<!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
 		<jar 
-			jarfile="${dist}/syntopiary.jar" 
+			jarfile="${dist_prog}/syntopiary.jar" 
 			basedir="${build}"
 			>
-			<zipfileset src="${dist}/external-libs.jar">
+			<zipfileset src="${dist_prog}/external-libs.jar">
 				<exclude name="*"/>
 			</zipfileset>
 			
@@ -73,23 +83,17 @@
 			
 		</jar>
 		<loadfile property="jarsignpassword" srcFile=".jarsign"/>
-		<signjar jar="${dist}/syntopiary.jar" alias="kirill" storepass="${jarsignpassword}" keystore="${basedir}/.keystore"/>
-<!--		
-		<signjar jar="${dist}/syntopiary.jar" alias="kirill" storepass="commodityencodingdollarmorality" keystore="${basedir}/.keystore"/>
--->		
+		<signjar jar="${dist_prog}/syntopiary.jar" alias="kirill" storepass="${jarsignpassword}" keystore="${basedir}/.keystore"/>
 	</target>
 
 	<target name="clean"
 			description="clean up" >
 		<!-- Delete the ${build} and ${dist} directory trees -->
 		<delete dir="${build}"/>
+		<delete dir="${dist_prog}"/>
+		<delete dir="${dist_scripts}"/>
 		<delete dir="${dist}"/>
 	</target>
 	
-	<target name="upload">
-		<scp todir="kirills@athena.dialup.mit.edu:www/syntopiary">
-			<fileset dir="${dist}"/>
-		</scp>
-	</target>
 </project>
 
