@@ -6,6 +6,7 @@
 	<title>SynTopiary</title>
 </head>
 <script src="http://cdn.jquerytools.org/1.2.7/full/jquery.tools.min.js"></script>
+
 <style type="text/css">
 <!--
 
@@ -163,23 +164,30 @@ font-size:15px;
 			var dataString = 'name='+ name + '&email=' + email + '&feedback=' + comments;
 			//~ var dataString = 'name='+ name + '&email=' + email;
 			//~ alert (dataString); return false;
+
 			$.ajax({
-			  type: "POST",
-			  url: "http://scripts.mit.edu/~kirills/syntopiary_feedback.php",
-			  data: dataString,
-			  success: function() {
-				$('#contact_form').html("<div id='message'></div>");
-				$('#message').html("<h2>Contact Form Submitted!</h2>")
-				.append("<p>We will be in touch soon.</p>")
-				.hide()
-				.fadeIn(1500, function() {
-				  $('#message').append("<img id='checkmark' src='images/check.png' />");
-				});
-			  }
-			 });
-				
-				
-		});
+				type: "POST",
+				url: "http://scripts.mit.edu/~kirills/syntopiary_feedback.php",
+				data: dataString,
+				//~ success: function(){
+					//~ alert('success');
+				//~ },
+				//~ error: function(){
+					//~ alert('failure');
+				//~ },
+				complete: function(){
+					$('#contact_form').html("<div id='message' style='text-align: center'></div>");
+					$('#message').html("<h2>feedback submitted</h2>")
+					.append("<p>thank you!</p>")
+					.hide()
+					.fadeIn(1500, function() {
+						$('#message').append("");
+					});
+				}
+			});
+			
+			return false;
+		});				
 	});
 </script>
 
@@ -209,23 +217,21 @@ font-size:15px;
 
 </div>
 <div class="simple_overlay" id="ovrFeedback">
-	<h2>feedback</h2>
-	<form name="commentary" method="post" action="">
-	<textarea rows="5" cols="50" id="comments" name="comments" style="width:100%;">Enter your comments here</textarea>
-	<fieldset>
-	<label for="name" id="name_label">Name (optional):</label>
-	<input type="text" class="feedline" name="name" id="name" >
-	<label for="email" id="email_label">Email (optional):</label>
-	<input type="text" class="feedline" name="email" id="email">
-	</fieldset>
-<!--	
-	<br>Name (optional): <input type="text" name="name" id="name" >
-	<br>Email (optional): <input type="text" name="email" id="email">
--->	
-	<div style="text-align: right">
-		<P><input type="submit" name="submit" class="button" id="submit_btn" value="Send">
+	<div id="contact_form">
+		<h2>feedback</h2>
+		<form name="commentary" method="post" action="">
+		<textarea rows="5" cols="50" id="comments" name="comments" style="width:100%;">Enter your comments here</textarea>
+		<fieldset>
+		<label for="name" id="name_label">Name (optional):</label>
+		<input type="text" class="feedline" name="name" id="name" >
+		<label for="email" id="email_label">Email (optional):</label>
+		<input type="text" class="feedline" name="email" id="email">
+		</fieldset>
+		<div style="text-align: right">
+			<P><input type="submit" name="submit" class="button" id="submit_btn" value="Send">
+		</div>
+		</form>
 	</div>
-	</form>
 </div>
 
 <div class="content"><style type="text/css">
@@ -316,6 +322,7 @@ To make a syntactic tree:
 <P class="notice">image: <a href="http://interfacelift.com/">http://interfacelift.com/</a> 
 via <a href="http://tymotion.wordpress.com/">TyMotion's Blog</a>.
 <br>code: <a href="https://github.com/angelatlarge/SynTopiary">https://github.com/angelatlarge/SynTopiary</a>
-<P class="notice">Issues? Problems? Suggestions? email kirill plus the letter s at this institution point edu.
+<P class="notice">Issues? Problems? Suggestions? email kirill plus the letter s at this institution point edu
+<br>or use the <a href="#" rel="#ovrFeedback">feedback</a> form
 
 </body>
