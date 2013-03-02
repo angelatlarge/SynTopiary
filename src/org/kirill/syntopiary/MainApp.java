@@ -32,8 +32,8 @@ import org.apache.pivot.wtk.Theme;
 /*
  * TODO: Unit tests, especially for EPS generation
  * TODO: EPS copy
+ * TODO: CGM file support?
  * TODO: Copy and paste text in the tree specification
- * TODO: In ternary branching, the middle lines needs to be vertical
  * TODO: EMF copy
  * TODO: EMF paste
  * TODO: Options parsing

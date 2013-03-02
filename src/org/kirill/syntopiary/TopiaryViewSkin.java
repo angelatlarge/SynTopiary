@@ -112,10 +112,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             // Lay out the children
             childrenWidth = 0;
             childrenHeight = 0;
+            int nIdxChild = 0;
             for (SkinNode childNode : children) {
             	childNode.layout();
             	childrenWidth += childNode.fullWidth;
             	childrenHeight = Math.max(childrenHeight, childNode.fullHeight);
+            	nIdxChild++;
             }
 
             // Lay out self
@@ -154,7 +156,21 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 					// Children are spaced out enough: no extra spacing necessary
 					childXSpacing = 0;
 				}
-				connectionPointX = (connectLeft+connectRight)/2;
+				if (children.size() % 2 == 0) {
+					// Even number of chilren: position between the two extreme connectors
+					connectionPointX = (connectLeft+connectRight)/2;
+				} else {
+					// Odd number of children. Position above the middle child
+					float connectMiddle = 0;
+					float nCurrentChildrenWidth = 0;
+					for (int i=0;i<=(children.size()/2); i++) {
+						SkinNode childNode = children.get(i);
+	            		connectMiddle = nCurrentChildrenWidth + childNode.connectionPointX;
+						nCurrentChildrenWidth += childNode.fullWidth;
+	            		nCurrentChildrenWidth += childXSpacing/(children.size()-1);
+	            	}
+					connectionPointX = connectMiddle;
+				}
 //				System.out.format("layout: 2+ children, lconn:%d rconn:%d, cspace: %d, connself:%d\n", (int)connectLeft, (int)connectRight, (int)childXSpacing, (int)connectionPointX);
 				leftPadding = (connectionPointX - (nodeBoxWidth/2));
 			} else if (children.size() == 1) {
