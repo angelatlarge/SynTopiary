@@ -107,6 +107,14 @@ public class TestParseTopiary {
 		pt = new ParseTopiary("My node[   options   ]");
 		assertPTnode(pt.getRoot(), "My node");
 		
+		// Multiple options
+		pt = new ParseTopiary("My node[optionA]");
+		assertPTnode(pt.getRoot(), "My node");
+		pt = new ParseTopiary("My node[optionA;optionB]");
+		assertPTnode(pt.getRoot(), "My node");
+		pt = new ParseTopiary("My node[optionA;  optionB  ]");
+		assertPTnode(pt.getRoot(), "My node");
+		
 		System.out.print("passed\n");
 	}
 	
