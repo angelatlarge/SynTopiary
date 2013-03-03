@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -97,6 +98,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		private float childXSpacing = 0;		// Extra spacing between children 
 												// (to make sure that the connection line have uniform slope 
 		private float connectHeight = 0;		// Height of the connection lines to the children below
+		
+		private float x = 0;					// Left side of this component (w.r.t. to the paint canvas)
+		private float y = 0;					// Top side of this component (w.r.t. to the paint canvas)
         
 		/** 
 		 * List of children node of this node
@@ -283,6 +287,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            FontRenderContext fontRenderContext = Platform.getFontRenderContext();
 	            LineMetrics lm = skin.getDefaultFont().getLineMetrics("", fontRenderContext);
 	            float ascent = lm.getAscent();
+				@SuppressWarnings("unused")
 				float lineHeight = lm.getHeight();
 
 	            float nLineY = y+nNodeYMargin;
@@ -290,6 +295,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                GlyphVector glyphVector = glyphVectors.get(i);
 
 	                Rectangle2D textBounds = glyphVector.getLogicalBounds();
+					@SuppressWarnings("unused")
 					float lineWidth = (float)textBounds.getWidth();
 
 	                if ((graphics instanceof LEPSGraphics2D) || (graphics instanceof PrintGraphics) ){
@@ -353,10 +359,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	 * 
 	 */	
     private class SkinConnection {
-    	TopiaryViewSkin skin;
+    	@SuppressWarnings("unused")
+		TopiaryViewSkin skin;
     	ParseTopiaryConnection parseConnection = null;
     	SkinNode sourceNode = null;
     	SkinNode targetNode = null;
+    	@SuppressWarnings("unused")
     	CubicCurve2D curve = null;
     	
     	/** 
@@ -414,7 +422,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     };
     
     private Color backgroundColor = null;
-	private float opacity = 1.0f;
 
     private Font defaultFont;
     private Color defaultColor;
@@ -574,31 +581,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         setBackgroundColor(GraphicsUtilities.decodeColor(backgroundColor));
     }
 
-    public float getOpacity() {
-    	System.out.print("getOpacity\n");
-    	return 1.0f;
-//        return opacity;
-    }
-
-    public void setOpacity(float opacity) {
-    	System.out.print("setOpacity\n");
-        if (opacity < 0 || opacity > 1) {
-            throw new IllegalArgumentException("Opacity out of range [0,1].");
-        }
-
-        this.opacity = opacity;
-        repaintComponent();
-    }
-
-    public final void setOpacity(Number opacity) {
-    	System.out.print("setOpacity\n");
-        if (opacity == null) {
-            throw new IllegalArgumentException("opacity is null.");
-        }
-
-        setOpacity(opacity.floatValue());
-    }
-
     // events
 
 	@Override
@@ -617,52 +599,122 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         invalidateComponent();
 	}
 	
-    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
+	/**
+	 * This class exists to make is possible to factor out Graphics2D streaming code
+	 * Because the classes we use declare their serialization methods [like stream()]
+	 * independently of any interface, we use this class to encapsulate the streaming
+	 */
+	abstract class Graphics2DStreamThunk {
+		abstract void StreamOut(Writer writer)  throws SVGGraphics2DIOException, IOException;
+		abstract Graphics2D getGraphics2D();
+	}
+	/**
+	 * Instance of Graphics2DStreamThunk for Apache's Batik Graphics2D -> SVG library
+	 * 
+	 */
+	class SVGGraphics2DStreamThunk extends Graphics2DStreamThunk {
+		protected SVGGraphics2D svgGenerator = null;
+		protected boolean useCSS;
+		SVGGraphics2DStreamThunk(SVGGraphics2D svgGen, boolean css) {
+			svgGenerator = svgGen;
+			useCSS = css;
+		}
+		Graphics2D getGraphics2D() { return svgGenerator; }
+		void StreamOut(Writer writer) throws SVGGraphics2DIOException {
+			svgGenerator.stream(writer, useCSS);
+		}
+	}
+	/**
+	 * Instance of Graphics2DStreamThunk for our own EPS output
+	 * 
+	 */
+	class LEPSGraphics2DStreamThunk extends Graphics2DStreamThunk {
+		protected LEPSGraphics2D epsGenerator = null;
+		LEPSGraphics2DStreamThunk(LEPSGraphics2D epsGen) {
+			epsGenerator = epsGen;
+		}
+		Graphics2D getGraphics2D() { return epsGenerator; }
+		void StreamOut(Writer writer) throws IOException {
+			epsGenerator.stream(writer);
+		}
+	}
+
+	/**
+	 * Internal method for serializing the graphics into a file or a memory stream
+	 *
+	 * @param file Target file. If null, the graphics are serialized onto a memory stream
+	 */
+	protected OutputStream streamTopiaryGraphics(File file, String filetypeName, Graphics2DStreamThunk thunk) {
+        Writer writerOut = null;
+        OutputStream streamOut = null;
     	try {
-	        // Get a DOMImplementation.
-	        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
-	
-	        // Create an instance of org.w3c.dom.Document.
-	        String svgNS = "http://www.w3.org/2000/svg";
-	        Document document = domImpl.createDocument(svgNS, "svg", null);
-	
-	        // Create an instance of the SVG Generator.
-	        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-	    	
-	        // Paint onto the generator
-	        this.paint(svgGenerator);
-	        
-	        // Save to file
-	        FileOutputStream streamOut = null;
-	        Writer writerOut = null;
-	    	try {
-				streamOut = new FileOutputStream(file);
-		        writerOut = new OutputStreamWriter(streamOut, "UTF-8");
-		        boolean useCSS = true; // we want to use CSS style attributes
-		        svgGenerator.stream(writerOut, useCSS);        
-			} catch (FileNotFoundException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} catch (SVGGraphics2DIOException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} finally {
+            // Paint onto the generator
+            this.paint(thunk.getGraphics2D());
+
+            // Stream out 
+            if (file != null) {
+            	// File is provided
+            	streamOut = new FileOutputStream(file);
+            } else {
+            	// No file, use ByteArrayOutputStream
+            	streamOut = new ByteArrayOutputStream();
+            }
+	        writerOut = new OutputStreamWriter(streamOut, "UTF-8");
+	        thunk.StreamOut(writerOut);
+		} catch (Exception e) {
+			String msg = String.format("Could not save as %s\nException of type %s\nwith the message\n\"%s\"", filetypeName, e.getClass().toString(), e.getMessage()); 
+			Alert.alert(MessageType.INFO, msg, null);
+			System.out.print(msg);
+			System.out.print("\n");
+			e.printStackTrace();
+		} finally {
+			try {
 				if (writerOut != null) writerOut.close();
 				if (streamOut != null) streamOut.close();
+			} catch (Exception e) {
+				// Do nothing
+			} finally {
+				writerOut = null;
 			}
-	    	
-	    	svgGenerator = null;
-	    	streamOut = null;
-	    	
-    	} catch (Exception e) {
-			Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-			e.printStackTrace();
-    	}
+		}
+    	
+    	return streamOut;
+	}
+	
+	/**
+	 * Paint the tree into an SVG file
+	 *
+	 */
+    public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, File file) {
+        // Get a DOMImplementation.
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+
+        // Create an instance of the SVG Generator.
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+    	
+        // Paint the graphics and stream out
+        streamTopiaryGraphics(file, "SVG file", new SVGGraphics2DStreamThunk(svgGenerator, true));
+    }
+
+	/**
+	 * Paint the tree into an EPS file
+	 *
+	 */
+    public void topiaryViewOutputRequestEPS(TopiaryView topiaryView, File file) {
+        // Create an instance of the SVG Generator.
+        LEPSGraphics2D epsGenerator = new LEPSGraphics2D();
+        
+        streamTopiaryGraphics(file, "EPS file", new LEPSGraphics2DStreamThunk(epsGenerator));
     }
     
+	/**
+	 * Put SVG representation of the tree onto the system clipboard
+	 *
+	 */
     public void topiaryViewOutputRequestSVG(TopiaryView topiaryView, Clipboard clipboard) {
         // Get a DOMImplementation.
         DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
@@ -674,84 +726,21 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         // Create an instance of the SVG Generator.
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
     	
-        // Paint onto the generator
-        this.paint(svgGenerator);
-
-        // Create an output stream
-        ByteArrayOutputStream streamOut = new ByteArrayOutputStream();
+        // Paint and stream out
+        OutputStream streamOut = streamTopiaryGraphics(null, "SVG", new SVGGraphics2DStreamThunk(svgGenerator, true));
         
-        // Write to the output stream
-        Writer writerOut = null;
-        try{
-			try {
-				writerOut = new OutputStreamWriter(streamOut, "UTF-8");
-		        boolean useCSS = true; // we want to use CSS style attributes
-				svgGenerator.stream(writerOut, useCSS);
-			} catch (UnsupportedEncodingException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not copy as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} catch (SVGGraphics2DIOException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not copy as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			}        
-        } finally {
-	        // Close everything 
-			try {
-				if (writerOut != null)writerOut.close();
-				if (streamOut != null) streamOut.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-        }
+        assert(streamOut instanceof ByteArrayOutputStream);		// HUGE cludge!
+        ByteArrayOutputStream baStreamOut = (ByteArrayOutputStream)streamOut;
         
-		// Create an input stream
-        ByteArrayInputStream streamIn = new ByteArrayInputStream(streamOut.toByteArray());
-
+        // Get the bytes
+        ByteArrayInputStream streamIn = new ByteArrayInputStream(baStreamOut.toByteArray());
         // Generate the selection object
         TopiarySelection topiarySelection = new TopiarySelection(streamIn);
-        
-        // Set clipboard contents
+		// Set clipboard contents
         clipboard.setContents(topiarySelection, topiarySelection);
+        
     }
     
-    public void topiaryViewOutputRequestEPS(TopiaryView topiaryView, File file) {
-    	try {
-	        // Create an instance of the SVG Generator.
-	        LEPSGraphics2D epsGenerator = new LEPSGraphics2D();
-	    	
-	        // Paint onto the generator
-	        this.paint(epsGenerator);
-	        
-	        // Save to file
-	        FileOutputStream streamOut = null;
-	        Writer writerOut = null;
-	    	try {
-				streamOut = new FileOutputStream(file);
-		        writerOut = new OutputStreamWriter(streamOut, "UTF-8");
-		        boolean useCSS = true; // we want to use CSS style attributes
-		        epsGenerator.stream(writerOut);        
-			} catch (FileNotFoundException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} catch (UnsupportedEncodingException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} catch (SVGGraphics2DIOException e) {
-				Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-				e.printStackTrace();
-			} finally {
-				if (writerOut != null) writerOut.close();
-				if (streamOut != null) streamOut.close();
-			}
-	    	
-	    	epsGenerator = null;
-	    	streamOut = null;
-	    	
-    	} catch (Exception e) {
-			Alert.alert(MessageType.INFO, String.format("Could not save as an SVG file\nException of type %s\nwith the message\n\"%s\"", e.getCause().toString(), e.getMessage()), null);
-			e.printStackTrace();
-    	}
-    }
     
 
 }
