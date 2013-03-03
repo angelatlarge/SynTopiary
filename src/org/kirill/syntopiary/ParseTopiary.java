@@ -99,6 +99,7 @@ public class ParseTopiary {
 		protected ArrayList<String> names = new ArrayList<String>();
 		protected ArrayList<ParseTopiaryConnection> targets = new ArrayList<ParseTopiaryConnection>();
 		protected ParseTopiaryNode parent = null;
+		protected int level = -1; 		// Level of the node, will be memoized;
 
 		/* Node parser clas
 		 * 
@@ -334,6 +335,114 @@ public class ParseTopiary {
 				c.findNodeTargets();
 			}
 		}
+
+		/**
+		 * Returns the parent of this node
+		 */
+		public ParseTopiaryNode getParent() {
+			return parent;
+		}
+		
+		/**
+		 * Returns the level of the node.  Root has level zero
+		 */
+		public int getLevel() {
+			if (level == -1) { 
+				if (parent == null) {
+					level = 0;
+				} else {
+					level = parent.getLevel()+1;
+				}
+			}
+			return level;
+		}
+
+		/**
+		 * Returns true if this node has the other node as an ancestor
+		 */
+		public boolean hasAsAncestor (ParseTopiaryNode other) {
+			if (other==this) return false; 	// Nodes are not considered their own parents
+			ParseTopiaryNode ancestor = parent;
+			while (ancestor != null) {
+				if (ancestor.equals(other))
+					return true;
+				ancestor = ancestor.parent;
+			}
+			return false;
+		}
+
+		/**
+		 * Compares children nodes based on linearity
+		 */
+		public int compareChildren(ParseTopiaryNode child1, ParseTopiaryNode child2) {
+			int i1 = children.indexOf(child1);
+			assert(i1 >= 0);
+			int i2 = children.indexOf(child2);
+			assert(i2 >= 0);
+			return i1 - i2; 
+		}
+		
+		/**
+		 * Index of the node in the children list
+		 */
+		public int indexOfChild(ParseTopiaryNode child) {
+			return children.indexOf(child);
+		}
+		
+		/**
+		 * Compares nodes based on their linearity
+		 * Nodes that are the same, or single parents of single children are equal
+		 * Nodes to the left of other nodes are "less than" those other nodes
+		 * Nodes to the right of other nodes are "greater than" those other nodes
+		 */
+		public int compareTo(ParseTopiaryNode other) {
+			if (other == this) return 0;			// Same nodes are equal
+			ParseTopiaryNode nodeParent = null;
+			ParseTopiaryNode nodeChild = null;
+			if (hasAsAncestor(other)) { 
+				nodeParent = this;
+				nodeChild = other;
+			} else if (other.hasAsAncestor(this)) {
+				nodeParent = other;
+				nodeChild = this;
+			} else {
+				// One node is not parented by the other
+				int l1 = this.getLevel();
+				int l2 = other.getLevel();
+				ParseTopiaryNode ancestor1 = this;
+				ParseTopiaryNode ancestor2 = other;
+				while (l1>l2) { ancestor1 = ancestor1.getParent(); }
+				while (l2>l1) { ancestor2 = ancestor2.getParent(); }
+				/* Now the level of ancestor1 is the same as the level of ancestor2
+				 * because "this" and "other" are not in a parent/child relationship
+				 * ancestor1 is guaranteed to not be equal to ancestor2 */
+				assert(!ancestor1.equals(ancestor2));
+				do {
+					
+					if ( ancestor1.getParent().equals(ancestor2.getParent()) ) {
+						// Children have the same parent.  Now we can compare them
+						return ancestor1.getParent().compareChildren(ancestor1, ancestor2);
+					} 
+					// Move to the higher parent
+					ancestor1 = ancestor1.getParent();
+					ancestor2 = ancestor2.getParent();
+				} while (true);
+			}
+			// We are here only if one node is parented by another
+			int returnValue = 0;
+			ParseTopiaryNode childCurrent = nodeChild;
+			ParseTopiaryNode parentCurrent = nodeChild.getParent();
+			do {
+				int childIndex = parentCurrent.indexOfChild(childCurrent);
+				int halfSize = parentCurrent.children.size() / 2;
+				int remainder = parentCurrent.children.size() % 2;
+				int newRetVal = (childIndex - halfSize) * 2 + remainder;	// This works for both even and odd number of children.
+				if (newRetVal != 0) {
+					returnValue = newRetVal;
+				}
+			} while (parentCurrent != nodeParent);
+			return returnValue;
+		}
 		
 	} // end of ParseTopiaryNode
 
@@ -408,6 +517,10 @@ public class ParseTopiary {
 		return root;
 	}
 	
+	public ParseTopiaryNode getNodeByName(String nodeName) {
+		return nameMapping.get(nodeName);
+	}
+	
 	public String getParseString() {
 		return parseString;
 	}
@@ -425,7 +538,6 @@ public class ParseTopiary {
 		} else {
 			doParse(null);
 		}
-//		System.out.format("Notifying listeners of changes: new string is %s...\n", parseString);
 		parseTopiaryListeners.parseTopiaryChanged(this);
 	}
 	

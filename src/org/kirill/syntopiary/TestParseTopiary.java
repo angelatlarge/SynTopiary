@@ -195,6 +195,135 @@ public class TestParseTopiary {
 		System.out.print("passed\n");
 	}
 	
+	@Test public static void testLevels() {
+		System.out.print("Testing levels...");
+		
+		ParseTopiary pt;
+		ParseTopiaryNode n1, n2, n3, n4;
+		Iterator<ParseTopiaryNode> itNodes;
+		
+		// Test levels
+		pt = new ParseTopiary("Root(A, B(C, D)");
+		itNodes = pt.getRoot().children().iterator();
+		assertTrue(itNodes.hasNext()); n1 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n2 = itNodes.next();
+		assertFalse(itNodes.hasNext()); ;
+		itNodes = n1.children().iterator();
+		assertFalse(itNodes.hasNext()); ;
+		itNodes = n2.children().iterator();
+		assertTrue(itNodes.hasNext()); n3 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n4 = itNodes.next();
+		assertFalse(itNodes.hasNext()); ;
+		assertTrue(pt.getRoot().getLevel()==0);
+		assertTrue(n1.getLevel()==1);
+		assertTrue(n2.getLevel()==1);
+		assertTrue(n3.getLevel()==2);
+		assertTrue(n4.getLevel()==2);
+		
+		System.out.print("passed\n");
+	}
+	@Test public static void testHasAsAncestor() {
+		System.out.print("Testing hasAsParent...");
+		
+		ParseTopiary pt;
+		ParseTopiaryNode n1, n2, n3, n4;
+		Iterator<ParseTopiaryNode> itNodes;
+		
+		// Test levels
+		pt = new ParseTopiary("Root(A, B(C, D)");
+		itNodes = pt.getRoot().children().iterator();
+		assertTrue(itNodes.hasNext()); n1 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n2 = itNodes.next();
+		assertFalse(itNodes.hasNext()); ;
+		itNodes = n1.children().iterator();
+		assertFalse(itNodes.hasNext()); ;
+		itNodes = n2.children().iterator();
+		assertTrue(itNodes.hasNext()); n3 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n4 = itNodes.next();
+		assertFalse(itNodes.hasNext());
+		
+		assertTrue(n4.hasAsAncestor(pt.getRoot()));
+		assertFalse(n4.hasAsAncestor(n1));
+		assertTrue(n4.hasAsAncestor(n2));
+		assertFalse(n4.hasAsAncestor(n3));
+		
+		assertTrue(n3.hasAsAncestor(pt.getRoot()));
+		assertFalse(n3.hasAsAncestor(n1));
+		assertTrue(n3.hasAsAncestor(n2));
+		assertFalse(n3.hasAsAncestor(n4));
+		
+		assertTrue(n2.hasAsAncestor(pt.getRoot()));
+		assertFalse(n2.hasAsAncestor(n1));
+		assertFalse(n2.hasAsAncestor(n2));
+		assertFalse(n2.hasAsAncestor(n3));
+		assertFalse(n2.hasAsAncestor(n4));
+		
+		System.out.print("passed\n");
+	}
+	
+	@Test public static void testNodeByName() {
+		System.out.print("Testing getNodeByName...");
+		
+		ParseTopiary pt;
+		ParseTopiaryNode n1, n2, n3, n4;
+		Iterator<ParseTopiaryNode> itNodes;
+		
+		// Test levels
+		pt = new ParseTopiary("Root(A, B(C, D)");
+		itNodes = pt.getRoot().children().iterator();
+		assertTrue(itNodes.hasNext()); n1 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n2 = itNodes.next();
+		assertFalse(itNodes.hasNext()); ;
+		itNodes = n1.children().iterator();
+		assertFalse(itNodes.hasNext()); ;
+		itNodes = n2.children().iterator();
+		assertTrue(itNodes.hasNext()); n3 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n4 = itNodes.next();
+		assertFalse(itNodes.hasNext());
+		
+		assertTrue(pt.getRoot().equals(pt.getNodeByName("Root")));
+		assertTrue(n1.equals(pt.getNodeByName("A")));
+		assertTrue(n2.equals(pt.getNodeByName("B")));
+		assertTrue(n3.equals(pt.getNodeByName("C")));
+		assertTrue(n4.equals(pt.getNodeByName("D")));
+		System.out.print("passed\n");
+	}
+	
+	@Test public static void testCompareChildren() {
+		System.out.print("Testing compareChildren...");
+	
+		ParseTopiary pt;
+		Iterator<ParseTopiaryNode> itNodes;
+		ParseTopiaryNode n1, n2, n3, n4;
+		int nComparison;
+		
+		// Simple compare
+		pt = new ParseTopiary("Root(A(B, C), D(E, F(H), G))");
+		n1 = pt.getNodeByName("A"); assertTrue(n1!=null);
+		n2 = pt.getNodeByName("B"); assertTrue(n2!=null);
+		n3 = pt.getNodeByName("C"); assertTrue(n2!=null);
+		assertTrue(n1.compareChildren(n2, n3) < 0);
+		assertTrue(n1.compareChildren(n3, n2) > 0);
+		assertTrue(n1.compareChildren(n3, n3) == 0);
+		assertTrue(n1.compareChildren(n2, n2) == 0);
+		
+		n1 = pt.getNodeByName("D"); assertTrue(n1!=null);
+		n2 = pt.getNodeByName("E"); assertTrue(n2!=null);
+		n3 = pt.getNodeByName("F"); assertTrue(n2!=null);
+		n4 = pt.getNodeByName("G"); assertTrue(n2!=null);
+		assertTrue(n1.compareChildren(n2, n3) < 0);
+		assertTrue(n1.compareChildren(n2, n4) < 0);
+		assertTrue(n1.compareChildren(n3, n4) < 0);
+		assertTrue(n1.compareChildren(n3, n2) > 0);
+		assertTrue(n1.compareChildren(n4, n2) > 0);
+		assertTrue(n1.compareChildren(n4, n3) > 0);
+		assertTrue(n1.compareChildren(n2, n2) == 0);
+		assertTrue(n1.compareChildren(n3, n3) == 0);
+		assertTrue(n1.compareChildren(n4, n4) == 0);
+		
+		System.out.print("passed\n");
+	}
+	
 	@Test public static void testParseOptions() {
 		System.out.print("Testing node parsing with options...");
 		ParseTopiary pt;
@@ -227,6 +356,10 @@ public class TestParseTopiary {
 		testDefaultNames();
 		testExplicitNames();
 		testTargets();
+		testLevels();
+		testHasAsAncestor();
+		testNodeByName();
+		testCompareChildren();
 //		testParseOptions();
     }    
 
