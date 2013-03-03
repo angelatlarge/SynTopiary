@@ -24,6 +24,7 @@
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 
 import org.apache.pivot.util.ListenerList;
 
@@ -48,58 +49,137 @@ public class ParseTopiary {
 	protected ParseTopiaryNode root;
 	protected String parseString;
 	
+	protected enum ParseTokenType {
+		pttTEXT, pttOPTIONS
+	};
+
+	
 	public class ParseTopiaryNode {
+		class NodeOption {
+		};
+		class NodeOptionGeneric extends NodeOption {
+			String text;
+			NodeOptionGeneric(String s) {
+				text = s;
+			}
+		};
+		class NodeOptionNameValue extends NodeOption {
+			String name;
+			String value;
+			NodeOptionNameValue(String n, String v) {
+				name = n;
+				value = v;
+			}
+		};
+		
 		protected String text;
 		protected ArrayList<ParseTopiaryNode> children = new ArrayList<ParseTopiaryNode>(); 
-		
+		protected ArrayList<NodeOption> options = new ArrayList<NodeOption>(); 
+
 		protected ParseTopiaryNode(StringBuilder src) {
 			StringBuilder strText = new StringBuilder();
+			String strOptionName = null;
+			
+			class ParseStackEntry {
+				public ParseTokenType parse;
+				ParseStackEntry(ParseTokenType p) {
+					parse =p;
+				}
+				String extractToken(StringBuilder src, int idxStart, int nLength) {
+					String result = src.substring(idxStart, nLength); 
+					src.delete(idxStart, nLength);
+					return result;
+				}
+			};
+			Stack<ParseStackEntry> stackParse = new Stack<ParseStackEntry>();
 			int idxTokenEnd = 0;
+			stackParse.push(new ParseStackEntry(ParseTokenType.pttTEXT)); 	// By default start with parsing text
+			
 			while (idxTokenEnd<src.length()) {
 				String ch = src.substring(idxTokenEnd, idxTokenEnd+1);
-				if (ch.equals("\\")) {
+				if (ch.equals("\\")) {	// Escape sequences apply to everything
 					src.delete(idxTokenEnd, idxTokenEnd+1);
 					idxTokenEnd++;
-//				} else if (ch.equals("[")) {
-//					// Begin options
-//				} else if (ch.equals("]")) {
-//					// End options
-				} else if (ch.equals("(")) {
-					// Begin children
-					strText.append(src.substring(0, idxTokenEnd));
-					src.delete(0, idxTokenEnd+1);
-					idxTokenEnd = 0;
-					boolean bMoreChildren;
-					do {
-						children.add(new ParseTopiaryNode(src));
-//						System.out.format("Ended a child call. src=\"%s\"\n", src);
-						bMoreChildren = false;
-						if (src.length()>0) {
-							if (src.substring(0, 1).equals(",")) {
-								bMoreChildren = true;
-								src.delete(0, 1);
-							} else { 
-								if (src.substring(0, 1).equals(")")) {
+				} else if ((stackParse.peek().parse == ParseTokenType.pttTEXT) && ch.equals("(")) {
+						// Begin children
+						strText.append(src.substring(0, idxTokenEnd));
+						src.delete(0, idxTokenEnd+1);
+						idxTokenEnd = 0;
+						boolean bMoreChildren;
+						do {
+							children.add(new ParseTopiaryNode(src));
+//							System.out.format("Ended a child call. src=\"%s\"\n", src);
+							bMoreChildren = false;
+							if (src.length()>0) {
+								if (src.substring(0, 1).equals(",")) {
+									bMoreChildren = true;
 									src.delete(0, 1);
+								} else { 
+									if (src.substring(0, 1).equals(")")) {
+										src.delete(0, 1);
+									}
 								}
 							}
-						}
-					} while (bMoreChildren);
-				} else if (ch.equals(")")) { 
+						} while (bMoreChildren);
+				} else if ((stackParse.peek().parse == ParseTokenType.pttTEXT) && ch.equals(")")) {
 					// End this node
 					/* If we are a child that is being ended by a parenthesis, 
 					 * we want to leave the parenthesis to the parent, 
 					 * so that further text will not be our sibling */
 					break;
-				} else if (ch.equals(",")) {
+				} else if ((stackParse.peek().parse == ParseTokenType.pttTEXT) && ch.equals(",")) {
 					// End this node
 					break;
+				} else if ((stackParse.peek().parse == ParseTokenType.pttTEXT) && ch.equals("[")) {
+					// Extract name
+					strText.append(stackParse.peek().extractToken(src, 0, idxTokenEnd).trim());
+					idxTokenEnd = 0;
+					// Begin options
+					stackParse.push(new ParseStackEntry(ParseTokenType.pttOPTIONS));
+					strOptionName = null;
+				} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(";")) {
+					// End of one option, start of another
+					String strOption = stackParse.peek().extractToken(src, 0, idxTokenEnd).trim();
+					idxTokenEnd = 0;
+					options.add(new NodeOptionGeneric(strOption));
+				} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(":")) {
+					// End of option name
+					strOptionName = stackParse.peek().extractToken(src, 0, idxTokenEnd).trim();
+				} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals("]")) {
+					// End options
+					String newToken = stackParse.peek().extractToken(src, 0, idxTokenEnd).trim();
+					if (strOptionName != null) {
+						options.add(new NodeOptionNameValue(strOptionName, newToken));
+					} else {
+						options.add(new NodeOptionGeneric(newToken));
+					}
+					// Delete closing brace
+					src.delete(0, 1);
+					idxTokenEnd = 0;
+					stackParse.pop();
 				} else {
 					idxTokenEnd++;
 				}
+				
 			}
-			strText.append(src.substring(0, idxTokenEnd));
-			src.delete(0, idxTokenEnd);
+			
+			String strNewToken = stackParse.peek().extractToken(src, 0, idxTokenEnd).trim();
+			switch (stackParse.peek().parse) {
+			case pttTEXT:
+				strText.append(strNewToken);
+				break;
+			case pttOPTIONS:
+				if (strOptionName != null) {
+					options.add(new NodeOptionNameValue(strOptionName, strNewToken));
+				} else {
+					options.add(new NodeOptionGeneric(strNewToken));
+				}
+				break;
+			default:
+				assert(false);
+			}
+			stackParse.pop();
+			
 			text = strText.toString().trim();
 		}
 		

@@ -36,11 +36,11 @@ public class TestParseTopiary {
 		assertFalse(n == null);
 		assertFalse(n.getText() == null);
 		assertFalse(n.getText().isEmpty());
-		assertTrue(n.getText().equals(text));
+		assertTrue(String.format("Expected node text %s, instead got %s", text, n.getText()), n.getText().equals(text));
 	}
 	
-	@Test public static void testParseTopiary() {
-		System.out.print("Testing parsing...");
+	@Test public static void testBasicParseNodes() {
+		System.out.print("Testing basic node parsing...");
 		ParseTopiary pt;
 		
 		// Single node, existence and text
@@ -91,8 +91,28 @@ public class TestParseTopiary {
 		System.out.print("passed\n");
 	}
 	
+	@Test public static void testParseOptions() {
+		System.out.print("Testing node parsing with options...");
+		ParseTopiary pt;
+
+		// Basic options
+		pt = new ParseTopiary("My node[options]");
+		assertPTnode(pt.getRoot(), "My node");
+		
+		// Options with whitespace
+		pt = new ParseTopiary("My node[options]   ");
+		assertPTnode(pt.getRoot(), "My node");
+		pt = new ParseTopiary("My node    [options]");
+		assertPTnode(pt.getRoot(), "My node");
+		pt = new ParseTopiary("My node[   options   ]");
+		assertPTnode(pt.getRoot(), "My node");
+		
+		System.out.print("passed\n");
+	}
+	
 	public static void main(String[] args) {
-		testParseTopiary();
+		testBasicParseNodes();
+		testParseOptions();
     }    
 
 }
