@@ -297,7 +297,6 @@ public class TestParseTopiary {
 		ParseTopiaryNode n1, n2, n3, n4;
 		int nComparison;
 		
-		// Simple compare
 		pt = new ParseTopiary("Root(A(B, C), D(E, F(H), G))");
 		n1 = pt.getNodeByName("A"); assertTrue(n1!=null);
 		n2 = pt.getNodeByName("B"); assertTrue(n2!=null);
@@ -323,33 +322,91 @@ public class TestParseTopiary {
 		
 		System.out.print("passed\n");
 	}
-	
-	@Test public static void testParseOptions() {
-		System.out.print("Testing node parsing with options...");
-		ParseTopiary pt;
+
+	private static void compareNodesTest(ParseTopiary pt, String nodeA, String nodeB, int ExpectedResult) {
+		System.out.format("%s vs %s ", nodeA, nodeB);
+		ParseTopiaryNode nA = pt.getNodeByName(nodeA);
+		assertTrue(nA != null);
+		ParseTopiaryNode nB = pt.getNodeByName(nodeB);
+		assertTrue(nB != null);
+
+		int nComparison;
 		
-		// Basic options
-		pt = new ParseTopiary("My node[options]");
-		assertPTnode(pt.getRoot(), "My node");
+		nComparison= nA.compareTo(nA);
+		assertTrue(nComparison == 0);
+		nComparison = nB.compareTo(nB);
+		assertTrue(nComparison == 0);
 		
-		// Options with whitespace
-		pt = new ParseTopiary("My node[options]   ");
-		assertPTnode(pt.getRoot(), "My node");
-		pt = new ParseTopiary("My node    [options]");
-		assertPTnode(pt.getRoot(), "My node");
-		pt = new ParseTopiary("My node[   options   ]");
-		assertPTnode(pt.getRoot(), "My node");
+		if (ExpectedResult<0) ExpectedResult = -1;	if (ExpectedResult>0) ExpectedResult = 1;
 		
-		// Multiple options
-		pt = new ParseTopiary("My node[optionA]");
-		assertPTnode(pt.getRoot(), "My node");
-		pt = new ParseTopiary("My node[optionA;optionB]");
-		assertPTnode(pt.getRoot(), "My node");
-		pt = new ParseTopiary("My node[optionA;  optionB  ]");
-		assertPTnode(pt.getRoot(), "My node");
-		
-		System.out.print("passed\n");
+		for (int i=0;i<2;i++) {
+			if (i==0) {
+				nComparison = nA.compareTo(nB);
+			} else {
+				nComparison = nB.compareTo(nA);
+				ExpectedResult = -ExpectedResult;
+			}
+			if (nComparison<0) nComparison = -1; 		
+			if (nComparison>0) nComparison = 1;			
+			
+			assertTrue(String.format("Expected comparison to result in %d, but got %d", nComparison, ExpectedResult), nComparison == ExpectedResult);
+		}
 	}
+	
+	@Test public static void testCompareTo() {
+		System.out.print("Testing compareChildren...");
+		ParseTopiary pt;
+		Iterator<ParseTopiaryNode> itNodes;
+		ParseTopiaryNode n1, n2, n3, n4;
+		int nComparison;
+
+		pt = new ParseTopiary("Root(A(B, C), D(E, F(H), G))");
+		
+		compareNodesTest(pt, "A", "B", 1);
+		
+		System.out.print("A vs B, ");
+		nComparison = pt.getNodeByName("A").compareTo(pt.getNodeByName("B"));
+		assertTrue(String.format("Expected comparison to be >0, but instead got %d", nComparison), nComparison > 0);
+		nComparison = pt.getNodeByName("B").compareTo(pt.getNodeByName("A"));
+		assertTrue(String.format("Expected comparison to be <0, but instead got %d", nComparison), nComparison < 0);
+		
+		System.out.print("A vs C, ");
+		nComparison = pt.getNodeByName("A").compareTo(pt.getNodeByName("C"));
+		assertTrue(String.format("Expected comparison to be <0, but instead got %d", nComparison), nComparison < 0);
+		nComparison = pt.getNodeByName("C").compareTo(pt.getNodeByName("A"));
+		assertTrue(String.format("Expected comparison to be >0, but instead got %d", nComparison), nComparison > 0);
+		
+		System.out.print("A vs D, ");
+		nComparison = pt.getNodeByName("A").compareTo(pt.getNodeByName("D"));
+		assertTrue(String.format("Expected comparison to be <0, but instead got %d", nComparison), nComparison < 0);
+		nComparison = pt.getNodeByName("D").compareTo(pt.getNodeByName("A"));
+		assertTrue(String.format("Expected comparison to be >0, but instead got %d", nComparison), nComparison > 0);
+		
+		System.out.print("A vs E, ");
+		assertTrue(pt.getNodeByName("A").compareTo(pt.getNodeByName("E")) < 0);
+		assertTrue(pt.getNodeByName("E").compareTo(pt.getNodeByName("A")) > 0);
+		
+		System.out.print("E vs Root, ");
+		assertTrue(pt.getNodeByName("E").compareTo(pt.getNodeByName("Root")) > 0);
+		assertTrue(pt.getNodeByName("Root").compareTo(pt.getNodeByName("E")) < 0);
+		
+		System.out.print("C vs Root, ");
+		assertTrue(pt.getNodeByName("C").compareTo(pt.getNodeByName("Root")) < 0);
+		assertTrue(pt.getNodeByName("Root").compareTo(pt.getNodeByName("C")) > 0);
+		
+		System.out.print("H vs D, ");
+		assertTrue(pt.getNodeByName("H").compareTo(pt.getNodeByName("D")) == 0);
+		assertTrue(pt.getNodeByName("D").compareTo(pt.getNodeByName("H")) == 0);
+
+		System.out.print("H vs E, ");
+		assertTrue(pt.getNodeByName("H").compareTo(pt.getNodeByName("E")) > 0);
+		assertTrue(pt.getNodeByName("E").compareTo(pt.getNodeByName("H")) < 0);
+		
+		System.out.print("H vs C, ");
+		assertTrue(pt.getNodeByName("H").compareTo(pt.getNodeByName("C")) > 0);
+		assertTrue(pt.getNodeByName("C").compareTo(pt.getNodeByName("H")) < 0);
+		System.out.print("passed\n");
+	}	
 	
 	public static void main(String[] args) {
 		testBasicParseNodes();
@@ -360,6 +417,7 @@ public class TestParseTopiary {
 		testHasAsAncestor();
 		testNodeByName();
 		testCompareChildren();
+		testCompareTo();
 //		testParseOptions();
     }    
 

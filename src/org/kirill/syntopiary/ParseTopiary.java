@@ -396,30 +396,32 @@ public class ParseTopiary {
 		 * Nodes to the right of other nodes are "greater than" those other nodes
 		 */
 		public int compareTo(ParseTopiaryNode other) {
+			assert(other != null);
 			if (other == this) return 0;			// Same nodes are equal
 			ParseTopiaryNode nodeParent = null;
 			ParseTopiaryNode nodeChild = null;
 			if (hasAsAncestor(other)) { 
-				nodeParent = this;
-				nodeChild = other;
-			} else if (other.hasAsAncestor(this)) {
 				nodeParent = other;
 				nodeChild = this;
+			} else if (other.hasAsAncestor(this)) {
+				nodeParent = this;
+				nodeChild = other;
 			} else {
 				// One node is not parented by the other
 				int l1 = this.getLevel();
 				int l2 = other.getLevel();
 				ParseTopiaryNode ancestor1 = this;
 				ParseTopiaryNode ancestor2 = other;
-				while (l1>l2) { ancestor1 = ancestor1.getParent(); }
-				while (l2>l1) { ancestor2 = ancestor2.getParent(); }
+				while (l1>l2) { ancestor1 = ancestor1.getParent(); l1--; }
+				while (l2>l1) { ancestor2 = ancestor2.getParent(); l2--; }
 				/* Now the level of ancestor1 is the same as the level of ancestor2
 				 * because "this" and "other" are not in a parent/child relationship
 				 * ancestor1 is guaranteed to not be equal to ancestor2 */
 				assert(!ancestor1.equals(ancestor2));
 				do {
-					
-					if ( ancestor1.getParent().equals(ancestor2.getParent()) ) {
+					assert(ancestor1 != null);
+					assert(ancestor2 != null);
+					if ( ancestor1.getParent() == ancestor2.getParent() ) {
 						// Children have the same parent.  Now we can compare them
 						return ancestor1.getParent().compareChildren(ancestor1, ancestor2);
 					} 
@@ -431,16 +433,20 @@ public class ParseTopiary {
 			// We are here only if one node is parented by another
 			int returnValue = 0;
 			ParseTopiaryNode childCurrent = nodeChild;
-			ParseTopiaryNode parentCurrent = nodeChild.getParent();
+			ParseTopiaryNode parentCurrent;
 			do {
+				parentCurrent = childCurrent.getParent();
 				int childIndex = parentCurrent.indexOfChild(childCurrent);
 				int halfSize = parentCurrent.children.size() / 2;
-				int remainder = parentCurrent.children.size() % 2;
-				int newRetVal = (childIndex - halfSize) * 2 + remainder;	// This works for both even and odd number of children.
+				int addend = 1 - parentCurrent.children.size() % 2;
+				int newRetVal = (childIndex - halfSize) * 2 + addend;	// This works for both even and odd number of children.
+				if (nodeParent == this)
+					newRetVal = - newRetVal;
 				if (newRetVal != 0) {
 					returnValue = newRetVal;
 				}
-			} while (parentCurrent != nodeParent);
+				childCurrent = parentCurrent;
+			} while (!nodeParent.equals(parentCurrent));
 			return returnValue;
 		}
 		
