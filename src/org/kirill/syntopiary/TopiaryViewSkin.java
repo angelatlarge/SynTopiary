@@ -71,7 +71,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	private float minYNodeSpacing = 7.0f;
     private float lineSlope = 0.125f;
 	
-	
+	/** 
+	 * This class implements the graphical side of each tree node
+	 */
     private class SkinNode {
     	TopiaryViewSkin skin;
     	
@@ -89,14 +91,22 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         private float fullWidth = 0;			// Width of this node + children
         private float fullHeight = 0;			// Height of this node + children
         
-        private float leftPadding = 0;			// Positive value: pad self, negative value = pad children
+        private float leftPadding = 0;			// Padding from the left; positive value: pad self, negative value = pad children
 
-		private float connectionPointX = 0;
-		private float childXSpacing = 0;
-		private float connectHeight = 0;
+		private float connectionPointX = 0;		// X position of the connection point (above and below)
+		private float childXSpacing = 0;		// Extra spacing between children 
+												// (to make sure that the connection line have uniform slope 
+		private float connectHeight = 0;		// Height of the connection lines to the children below
         
+		/** 
+		 * List of children node of this node
+		 */	
 		protected java.util.ArrayList<SkinNode> children = new java.util.ArrayList<SkinNode>(); 
     	
+		/** 
+		 * SkinNode.SkinNode(TopiaryViewSkin, parseTopiaryNode)
+		 * Basic constructor
+		 */	
     	public SkinNode(TopiaryViewSkin parentSkin, ParseTopiaryNode parseTopiaryNode) {
     		assert(parentSkin != null);
     		skin = parentSkin;
@@ -105,21 +115,21 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     			children.add(new SkinNode(skin, n));
     	}
     	
-    	/* SkinNode */
+		/** 
+		 * SkinNode.layout()
+		 * Called to lay out the node on a graphic canvas 
+		 */	
         public void layout() {
         	assert(parseNode!=null);
             String text = parseNode.getText();
-//	    	System.out.format("SkinNode.layout(). Node text: %s\n", text);
 	    	
             // Lay out the children
             childrenWidth = 0;
             childrenHeight = 0;
-            int nIdxChild = 0;
             for (SkinNode childNode : children) {
             	childNode.layout();
             	childrenWidth += childNode.fullWidth;
             	childrenHeight = Math.max(childrenHeight, childNode.fullHeight);
-            	nIdxChild++;
             }
 
             // Lay out self
@@ -173,7 +183,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            	}
 					connectionPointX = connectMiddle;
 				}
-//				System.out.format("layout: 2+ children, lconn:%d rconn:%d, cspace: %d, connself:%d\n", (int)connectLeft, (int)connectRight, (int)childXSpacing, (int)connectionPointX);
 				leftPadding = (connectionPointX - (nodeBoxWidth/2));
 			} else if (children.size() == 1) {
 				// One child
@@ -195,7 +204,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             
         }
     	
-    	/* SkinNode */
+		/** 
+		 * SkinNode.appendLine(String, int, int, fontRenderContext)
+		 * Called from layout to split the text into lines and 
+		 * to store the lines as glyphVector for faster drawing
+		 */	
 	    private void appendLine(String text, int start, int end, FontRenderContext fontRenderContext) {
 	        StringCharacterIterator line = new StringCharacterIterator(text, start, end, start);
 	        assert(skin != null);
@@ -208,17 +221,28 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        nodeTextWidth = (float) Math.max(nodeTextWidth, textBounds.getWidth());
 	    }
     	
-    	/* SkinNode */
-	    @SuppressWarnings("unused")
+		/** 
+		 * SkinNode.paint(graphics, int, int)
+		 * 
+		 * Called to paint the node onto the canvas
+		 * 
+		 * @param graphics The canvas onto which we paint the node
+		 * Could be a screen or a fake canvas for creating an output file
+		 * 
+		 * @param x Starting x dimension of the node
+		 * 
+		 * @param y Starting y dimension of the node
+		 * 
+		 */	
 		public void paint(Graphics2D graphics, float x, float y) {
 	        TopiaryView topiaryView = (TopiaryView)getComponent();
         	assert(parseNode!=null);
             String text = parseNode.getText();
-//	    	System.out.format("SkinNode.paint(). Node text: %s\n", text);
 
-//	        int width = getWidth();
-//	        int height = getHeight();
-
+            /* The TextBox skin class of Apache Pivot has the following code here
+		        int width = getWidth();
+		        int height = getHeight();
+            */
             
             if (topiaryView.getDrawFullBoundaries()) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
@@ -242,7 +266,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	graphics.setColor(Color.RED);
             	graphics.drawRect((int)(x + nNodeXMargin + ((leftPadding>0)?leftPadding:0)), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
             }
-            if (false) {
+            if (topiaryView.getDrawConnectionPoints()) {
             	// Draw connection point Xs
             	graphics.drawLine((int)(connectionPointX+x)-1, (int)(y)-1, (int)(connectionPointX+x)+1, (int)(y)+1);
             	graphics.drawLine((int)(connectionPointX+x)-1, (int)(y)+1, (int)(connectionPointX+x)+1, (int)(y)-1);
@@ -250,7 +274,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         		graphics.drawLine((int)(connectionPointX+x)-1, (int)(y+nodeBoxHeight)+1, (int)(connectionPointX+x)+1, (int)(y+nodeBoxHeight)-1);
             }
             
-	        // Draw the text
+	        // Draw the text of this node
 	        if (glyphVectors != null && glyphVectors.getLength() > 0) {
 	            graphics.setFont(skin.getDefaultFont());
 
@@ -259,22 +283,14 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            FontRenderContext fontRenderContext = Platform.getFontRenderContext();
 	            LineMetrics lm = skin.getDefaultFont().getLineMetrics("", fontRenderContext);
 	            float ascent = lm.getAscent();
-	            @SuppressWarnings("unused")
 				float lineHeight = lm.getHeight();
-
-//	            float y = height - (textHeight + padding.bottom);
-//	            float y = height - textHeight;
 
 	            float nLineY = y+nNodeYMargin;
 	            for (int i = 0, n = glyphVectors.getLength(); i < n; i++) {
 	                GlyphVector glyphVector = glyphVectors.get(i);
 
 	                Rectangle2D textBounds = glyphVector.getLogicalBounds();
-	                @SuppressWarnings("unused")
 					float lineWidth = (float)textBounds.getWidth();
-
-//	                float x = padding.left;
-//	                float x = 0;
 
 	                if ((graphics instanceof LEPSGraphics2D) || (graphics instanceof PrintGraphics) ){
 	                    // Work-around for printing problem in applets, 
@@ -285,9 +301,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                }
 	                else {
 	                	graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
-	                	if (false) {
-	                		graphics.drawString(String.format("%d", (int)connectionPointX), x + nNodeXMargin + ((leftPadding>0)?leftPadding:0) + nodeTextWidth, nLineY + ascent);
-	                	}
 	                }
 
 	                nLineY += textBounds.getHeight();
@@ -310,6 +323,14 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             }
 	    }
 	    
+		/** 
+		 * SkinNode.findNodeForParseNode(ParseTopiaryNode)
+		 * 
+		 * Called to find a SkinNode for a particular ParseTopiaryNode
+		 * 
+		 * This function is a bit slow now
+		 * 
+		 */	
 	    SkinNode findNodeForParseNode(ParseTopiaryNode searchNode) {
 	    	/* TODO: We could make it faster by creating a hash map of nodes at the skin level,
 	    	 * but it probably isn't necessary */
@@ -327,6 +348,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     } // End of SkinNode 
 	
     
+	/** 
+	 * Class implementing a connection (movement arrow) between two nodes
+	 * 
+	 */	
     private class SkinConnection {
     	TopiaryViewSkin skin;
     	ParseTopiaryConnection parseConnection = null;
@@ -334,6 +359,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	SkinNode targetNode = null;
     	CubicCurve2D curve = null;
     	
+    	/** 
+    	 * SkinConnection.SkinConnection(parentSkin, parseTopiaryConnection)
+    	 * 
+    	 * Basic constructor
+    	 * 
+    	 */	
     	public SkinConnection(TopiaryViewSkin parentSkin, ParseTopiaryConnection parseTopiaryConnection) {
     		assert(parentSkin != null);
     		skin = parentSkin;
@@ -346,6 +377,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     		assert(targetNode != null);
     	}
     	
+    	/** 
+    	 * SkinConnection.layout()
+    	 * 
+    	 * Lays out the geometry of the connection arrow
+    	 * 
+    	 */	
     	protected void layout() {
     		// TODO: Do layout here
     		
@@ -356,6 +393,19 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     		return;
     	}
     	
+		/** 
+		 * SkinConnection.paint(graphics, int, int)
+		 * 
+		 * Called to paint the node onto the canvas
+		 * 
+		 * @param graphics The canvas onto which we paint the node
+		 * Could be a screen or a fake canvas for creating an output file
+		 * 
+		 * @param x Here x is the starting x dimension of the entire tree
+		 * 
+		 * @param y Here y is the starting y dimension of the entire tree
+		 * 
+		 */	
     	protected void paint(Graphics2D graphics, float x, float y) {
     		// TODO: Do painting here
     		return;
@@ -364,7 +414,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     };
     
     private Color backgroundColor = null;
-    @SuppressWarnings("unused")
 	private float opacity = 1.0f;
 
     private Font defaultFont;
@@ -443,7 +492,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
     @Override
     public void layout() {
-//    	System.out.print("TopiaryViewSkin.layout\n");
         buildNodes();
         if (rootSkinNode != null) {
         	rootSkinNode.layout();
@@ -476,7 +524,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     
     @Override
     public void paint(Graphics2D graphics) {
-//    	System.out.print("Painting a TopiaryViewSkin\n");
 
         int width = getWidth();
         int height = getHeight();

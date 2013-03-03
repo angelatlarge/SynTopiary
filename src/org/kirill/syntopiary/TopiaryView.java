@@ -37,6 +37,7 @@ public class TopiaryView extends Component {
 	private boolean fDrawTextBoundaries = false;
 	private boolean fDrawNodeBoundaries = false;
 	private boolean fDrawFullBoundaries = false;
+	private boolean fDrawConnectionPoints = false;
 
     private ParseTopiary parseTopiary;
 	
@@ -98,6 +99,11 @@ public class TopiaryView extends Component {
     public boolean getDrawFullBoundaries() { return fDrawFullBoundaries; }
     public void setDrawFullBoundaries(boolean newValue) { 
     	fDrawFullBoundaries = newValue;
+    	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
+    }
+    public boolean getDrawConnectionPoints() { return fDrawConnectionPoints; }
+    public void setDrawConnectionPoints(boolean newValue) { 
+    	fDrawConnectionPoints = newValue;
     	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
     }
     public void generateSVG( File file ) {
