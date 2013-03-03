@@ -154,7 +154,7 @@ public class TestParseTopiary {
 		ParseTopiary pt;
 		ParseTopiaryNode n1, n2, n3;
 		Iterator<ParseTopiaryNode> itNodes;
-		Iterator<ParseTopiaryNode.Target> itTargets;
+		Iterator<ParseTopiary.ParseTopiaryConnection> itTargets;
 		
 		pt = new ParseTopiary("Root(A, B[target:A]");
 		assertFalse(pt.getRoot().targets().iterator().hasNext());

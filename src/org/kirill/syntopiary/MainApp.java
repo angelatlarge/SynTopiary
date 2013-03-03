@@ -30,7 +30,7 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Unit tests, especially for EPS generation
+ * TODO: Draw target arrows
  * TODO: EPS copy
  * TODO: CGM file support?
  * TODO: Copy and paste text in the tree specification

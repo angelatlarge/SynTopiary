@@ -58,38 +58,46 @@ public class ParseTopiary {
 	 */
 	protected String parseString;
 	/** 
-	 * Mapping of node names to nodes themselves. Built during parsing
+	 * Mapping of node names to nodes themselves. 
 	 */
 	protected HashMap<String, ParseTopiaryNode> nameMapping = null;
 	
+	/** 
+	 * List of connections between nodes
+	 */
+	protected ArrayList<ParseTopiaryConnection> connections = null;
 	
 	protected enum ParseTokenType {
 		pttTEXT, pttOPTIONS
 	};
 
+	public class ParseTopiaryConnection {
+		protected String targetName = null;
+		protected ParseTopiaryNode sourceNode = null;
+		protected ParseTopiaryNode targetNode = null;
+		
+		protected ParseTopiaryConnection(ParseTopiaryNode src, String name) {
+			assert(src!=null);
+			sourceNode = src;
+			
+			assert(name!=null);
+			targetName = name;
+		}
+		public ParseTopiaryNode getTargetNode() {
+			return targetNode;
+		}
+		public ParseTopiaryNode getSourceNode() {
+			return sourceNode;
+		}
+	}
+
 	
 	public class ParseTopiaryNode {
-		/* NodeOption class
-		 * 
-		 */
-		
-		class Target {
-			protected String targetName = null;
-			protected ParseTopiaryNode targetNode = null;
-			
-			protected Target(String n) {
-				assert(n!=null);
-				targetName = n;
-			}
-			public ParseTopiaryNode getTargetNode() {
-				return targetNode;
-			}
-		}
 		
 		protected String text;
 		protected ArrayList<ParseTopiaryNode> children = new ArrayList<ParseTopiaryNode>(); 
 		protected ArrayList<String> names = new ArrayList<String>();
-		protected ArrayList<Target> targets = new ArrayList<Target>();
+		protected ArrayList<ParseTopiaryConnection> targets = new ArrayList<ParseTopiaryConnection>();
 		protected ParseTopiaryNode parent = null;
 
 		/* Node parser clas
@@ -146,7 +154,9 @@ public class ParseTopiary {
 							if (strNewToken.isEmpty()) {
 								// TODO: log the error
 							} else {
-								targets.add(new Target(strNewToken));
+								ParseTopiaryConnection conn = new ParseTopiaryConnection(ParseTopiaryNode.this, strNewToken); 
+								targets.add(conn);
+								connections.add(conn);
 							}
 						}
 					} else {
@@ -284,7 +294,7 @@ public class ParseTopiary {
 			return names;
 		}
 		
-		public Iterable<Target> targets() {
+		public Iterable<ParseTopiaryConnection> targets() {
 			return targets;
 		}
 		
@@ -307,9 +317,9 @@ public class ParseTopiary {
 			assert(nameMapping != null);
 			
 			// Find own target nodes
-			Iterator<Target> it = targets.iterator();
+			Iterator<ParseTopiaryConnection> it = targets.iterator();
 			while (it.hasNext()) {
-				Target t = it.next();
+				ParseTopiaryConnection t = it.next();
 				ParseTopiaryNode node = nameMapping.get(t.targetName);
 				if (node == null) {
 					// TODO: Log this error
@@ -330,6 +340,7 @@ public class ParseTopiary {
 	protected void doParse(StringBuilder src) {
 		if (src!=null) {
 			nameMapping = new HashMap<String, ParseTopiaryNode>();
+			connections = new ArrayList<ParseTopiaryConnection>();
 			root = new ParseTopiaryNode(src, null);
 			assert(root != null);
 			
@@ -372,6 +383,7 @@ public class ParseTopiary {
 			// Empty tree
 			root = null;
 			nameMapping = null;
+			connections = null;
 		}
 		
 	}
@@ -420,7 +432,11 @@ public class ParseTopiary {
 	public String toString() {
 		return root.toString();
 	}
-	
+
+	public Iterable<ParseTopiaryConnection> connections() {
+		return connections;
+	}
+
 	public static void main(String[] args) {
 		// Test
 		ParseTopiary pt = new ParseTopiary("A(B,C)");

@@ -31,6 +31,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,6 +62,7 @@ import org.apache.batik.dom.GenericDOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DOMImplementation;
 
+import org.kirill.syntopiary.ParseTopiary.ParseTopiaryConnection;
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 
 public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener, TopiaryViewListener {
@@ -306,9 +308,61 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	childNode.paint(graphics, nChildStartX, nChildrenStartY);
             	nChildStartX += childNode.fullWidth + ((children.size()>1)?childXSpacing/(children.size()-1):0);
             }
-	    }	    
+	    }
+	    
+	    SkinNode findNodeForParseNode(ParseTopiaryNode searchNode) {
+	    	/* TODO: We could make it faster by creating a hash map of nodes at the skin level,
+	    	 * but it probably isn't necessary */
+	    	if (parseNode.equals(searchNode)) 
+	    		return this;
+            for (SkinNode childNode : children) {
+            	SkinNode found = childNode.findNodeForParseNode(searchNode);
+            	if (found != null) {
+            		return found;
+            	}
+            }
+            return null;
+	    }
+            
     } // End of SkinNode 
 	
+    
+    private class SkinConnection {
+    	TopiaryViewSkin skin;
+    	ParseTopiaryConnection parseConnection = null;
+    	SkinNode sourceNode = null;
+    	SkinNode targetNode = null;
+    	CubicCurve2D curve = null;
+    	
+    	public SkinConnection(TopiaryViewSkin parentSkin, ParseTopiaryConnection parseTopiaryConnection) {
+    		assert(parentSkin != null);
+    		skin = parentSkin;
+    		parseConnection = parseTopiaryConnection;
+    		
+    		// Find the source and target nodes
+    		sourceNode = rootSkinNode.findNodeForParseNode(parseConnection.getTargetNode());
+    		assert(sourceNode != null);
+    		targetNode = rootSkinNode.findNodeForParseNode(parseConnection.getTargetNode());
+    		assert(targetNode != null);
+    	}
+    	
+    	protected void layout() {
+    		// TODO: Do layout here
+    		
+    		/*
+    		 * Resolve connection points (deal with multiple
+    		 * Find lowest nodes in between and make sure that we are lower
+    		 */
+    		return;
+    	}
+    	
+    	protected void paint(Graphics2D graphics, float x, float y) {
+    		// TODO: Do painting here
+    		return;
+    	}
+    	
+    };
+    
     private Color backgroundColor = null;
     @SuppressWarnings("unused")
 	private float opacity = 1.0f;
@@ -316,8 +370,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     private Font defaultFont;
     private Color defaultColor;
 
-    protected SkinNode rootSkinNode; 
-    
+    protected SkinNode rootSkinNode = null;
+    protected ArrayList<SkinConnection> connections = null;    
     
     public TopiaryViewSkin() {       
         Theme theme = Theme.getTheme();
@@ -393,6 +447,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         buildNodes();
         if (rootSkinNode != null) {
         	rootSkinNode.layout();
+        	for (SkinConnection conn : connections) {
+        		conn.layout();
+        	}
         }
     }
 
@@ -405,6 +462,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         	ParseTopiaryNode rootNode = parseTopiary.getRoot();
         	if (rootNode != null) {
         		rootSkinNode = new SkinNode(this, rootNode);
+        		connections = new ArrayList<SkinConnection>();
+            	for (ParseTopiaryConnection conn : parseTopiary.connections()) {
+            		connections.add(new SkinConnection(this, conn));
+            	}
         	}
         }
     }
@@ -428,6 +489,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         if (rootSkinNode != null) {
         	// TODO:Take care of padding here 
         	rootSkinNode.paint(graphics, 0, 0);
+        	for (SkinConnection conn : connections) {
+        		conn.paint(graphics, 0, 0);
+        	}
         }
     }
 
