@@ -99,9 +99,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 												// (to make sure that the connection line have uniform slope 
 		private float connectHeight = 0;		// Height of the connection lines to the children below
 		
-		private float x = 0;					// Left side of this component (w.r.t. to the paint canvas)
-		private float y = 0;					// Top side of this component (w.r.t. to the paint canvas)
-        
+		private float x = Float.NEGATIVE_INFINITY;	// Left side of this component (w.r.t. to the paint canvas)
+													// NEGATIVE_INFINITY is a sentinel value indicating that x is not valid 
+		private float y = Float.NEGATIVE_INFINITY;	// Top side of this component (w.r.t. to the paint canvas)
+													// NEGATIVE_INFINITY is a sentinel value indicating that y is not valid 
+		
 		/** 
 		 * List of children node of this node
 		 */	
@@ -225,22 +227,38 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        nodeTextWidth = (float) Math.max(nodeTextWidth, textBounds.getWidth());
 	    }
     	
+	    /** 
+	     * SkinNode.setOrigin(float, float)
+	     * 
+	     * Called to set the origin of this node, after layout is completed
+	     * 
+	     */
+	    protected void setOrigin(float oX, float oY) {
+	    	x = oX;
+	    	y = oY;
+	        float nChildStartX = x + ((leftPadding<0)?-leftPadding:0);
+			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
+            for (SkinNode childNode : children) {
+            	childNode.setOrigin(nChildStartX, nChildrenStartY);
+            	nChildStartX += childNode.fullWidth + ((children.size()>1)?childXSpacing/(children.size()-1):0);
+            }
+	    }
+	    
 		/** 
-		 * SkinNode.paint(graphics, int, int)
+		 * SkinNode.paint(graphics, float, float)
 		 * 
 		 * Called to paint the node onto the canvas
 		 * 
 		 * @param graphics The canvas onto which we paint the node
 		 * Could be a screen or a fake canvas for creating an output file
 		 * 
-		 * @param x Starting x dimension of the node
-		 * 
-		 * @param y Starting y dimension of the node
-		 * 
 		 */	
-		public void paint(Graphics2D graphics, float x, float y) {
+		public void paint(Graphics2D graphics) {
 	        TopiaryView topiaryView = (TopiaryView)getComponent();
         	assert(parseNode!=null);
+        	assert(x != Float.NEGATIVE_INFINITY);
+        	assert(y != Float.NEGATIVE_INFINITY);
+        	
             String text = parseNode.getText();
 
             /* The TextBox skin class of Apache Pivot has the following code here
@@ -319,12 +337,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
             	// Paint the connection
-            	if (true) {
-            		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
-            	}
+            	graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
 				
 				// Paint the child
-            	childNode.paint(graphics, nChildStartX, nChildrenStartY);
+            	childNode.paint(graphics);
             	nChildStartX += childNode.fullWidth + ((children.size()>1)?childXSpacing/(children.size()-1):0);
             }
 	    }
@@ -365,7 +381,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	SkinNode sourceNode = null;
     	SkinNode targetNode = null;
     	@SuppressWarnings("unused")
-    	CubicCurve2D curve = null;
+    	CubicCurve2D curves[] = null;
     	
     	/** 
     	 * SkinConnection.SkinConnection(parentSkin, parseTopiaryConnection)
@@ -379,7 +395,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     		parseConnection = parseTopiaryConnection;
     		
     		// Find the source and target nodes
-    		sourceNode = rootSkinNode.findNodeForParseNode(parseConnection.getTargetNode());
+    		sourceNode = rootSkinNode.findNodeForParseNode(parseConnection.getSourceNode());
     		assert(sourceNode != null);
     		targetNode = rootSkinNode.findNodeForParseNode(parseConnection.getTargetNode());
     		assert(targetNode != null);
@@ -392,13 +408,39 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	 * 
     	 */	
     	protected void layout() {
-    		// TODO: Do layout here
-    		
     		/*
-    		 * Resolve connection points (deal with multiple
+    		 * Resolve connection points (deal with multiple)
     		 * Find lowest nodes in between and make sure that we are lower
     		 */
-    		return;
+    		if (curves != null) {
+    			curves = null;
+    		}
+    		curves = new CubicCurve2D[2];
+    		System.out.format("Curve from %f %f to %f %f", 
+				sourceNode.x + sourceNode.connectionPointX, 
+				sourceNode.y + sourceNode.nodeBoxHeight, 
+				targetNode.x + targetNode.connectionPointX, 
+				targetNode.y + targetNode.nodeBoxHeight
+				);
+    		float yCurveBottom = 
+    				Math.max(
+    					sourceNode.y + sourceNode.nodeBoxHeight, 
+    					targetNode.y + targetNode.nodeBoxHeight) 
+    				+ 20;
+    		float xCurveCenter =
+    				(
+    					  (sourceNode.x + sourceNode.connectionPointX) 
+    					+ (targetNode.x + targetNode.connectionPointX)
+    				) / 2;
+    		for (int i=0;i<2;i++) {
+    			SkinNode n = (i==0)?sourceNode:targetNode;
+	    		curves[i] = new CubicCurve2D.Double(
+	    				n.x + n.connectionPointX, n.y + n.nodeBoxHeight, 
+	    				n.x + n.connectionPointX, yCurveBottom, 
+	    				n.x + n.connectionPointX, yCurveBottom, 
+	    				xCurveCenter, yCurveBottom); 
+    		}
+    		
     	}
     	
 		/** 
@@ -409,13 +451,14 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		 * @param graphics The canvas onto which we paint the node
 		 * Could be a screen or a fake canvas for creating an output file
 		 * 
-		 * @param x Here x is the starting x dimension of the entire tree
-		 * 
-		 * @param y Here y is the starting y dimension of the entire tree
-		 * 
 		 */	
-    	protected void paint(Graphics2D graphics, float x, float y) {
+    	protected void paint(Graphics2D graphics) {
     		// TODO: Do painting here
+    		assert(curves != null);
+    		for (CubicCurve2D curve : curves) {
+    			assert(curve != null);
+    			graphics.draw(curve);
+    		}
     		return;
     	}
     	
@@ -501,7 +544,12 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     public void layout() {
         buildNodes();
         if (rootSkinNode != null) {
+        	// Lay out the nodes
         	rootSkinNode.layout();
+        	// Position the nodes
+        	// TODO:Take care of padding here 
+        	rootSkinNode.setOrigin(0, 0);
+        	// Lay out and position the connections
         	for (SkinConnection conn : connections) {
         		conn.layout();
         	}
@@ -541,10 +589,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         }
 
         if (rootSkinNode != null) {
-        	// TODO:Take care of padding here 
-        	rootSkinNode.paint(graphics, 0, 0);
+        	rootSkinNode.paint(graphics);
         	for (SkinConnection conn : connections) {
-        		conn.paint(graphics, 0, 0);
+        		conn.paint(graphics);
         	}
         }
     }
