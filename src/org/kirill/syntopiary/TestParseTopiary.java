@@ -131,6 +131,7 @@ public class TestParseTopiary {
 		ParseTopiaryNode n;
 		Iterator<ParseTopiaryNode> it;
 
+		// Regular names
 		pt = new ParseTopiary("Apple[name:orange]");
 		testNodeNames(pt.getRoot(), "orange");
 		pt = new ParseTopiary("Apple(pear[name:orange], banana[ name: Peach ]");
@@ -141,8 +142,13 @@ public class TestParseTopiary {
 		assertTrue(it.hasNext()); n = it.next();
 		testNodeNames(n, "Peach");
 		
+		// Multiple names
+		pt = new ParseTopiary("Animal on the table[name:pachyderm; name:elephant]");
+		testNodeNames(pt.getRoot(), "pachyderm", "elephant");
+		
 		System.out.print("passed\n");
 	}
+	
 	@Test public static void testParseOptions() {
 		System.out.print("Testing node parsing with options...");
 		ParseTopiary pt;

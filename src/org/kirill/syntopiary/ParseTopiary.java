@@ -72,29 +72,9 @@ public class ParseTopiary {
 		/* NodeOption class
 		 * 
 		 */
-		class NodeOption {
-		};
-		class NodeOptionName {
-			
-		}
-		class NodeOptionGeneric extends NodeOption {
-			String text;
-			NodeOptionGeneric(String s) {
-				text = s;
-			}
-		};
-		class NodeOptionNameValue extends NodeOption {
-			String name;
-			String value;
-			NodeOptionNameValue(String n, String v) {
-				name = n;
-				value = v;
-			}
-		};
 		
 		protected String text;
 		protected ArrayList<ParseTopiaryNode> children = new ArrayList<ParseTopiaryNode>(); 
-		protected ArrayList<NodeOption> options = new ArrayList<NodeOption>();
 		protected ArrayList<String> names = new ArrayList<String>();
 		protected ParseTopiaryNode parent = null;
 
@@ -140,10 +120,10 @@ public class ParseTopiary {
 								names.add(strNewToken);
 								nameMapping.put(strNewToken, ParseTopiaryNode.this);
 							}
+						} else if (strOptionName.equalsIgnoreCase("target")) {
 						}
-						options.add(new NodeOptionNameValue(strOptionName, strNewToken));
 					} else {
-						options.add(new NodeOptionGeneric(strNewToken));
+						// TODO: Do something useful here
 					}
 					strOptionName = null;
 					break;
@@ -207,12 +187,16 @@ public class ParseTopiary {
 						// End of one option, start of another
 						parseEndCategory();
 						assert(strOptionName != null);
-						options.add(new NodeOptionGeneric(strOptionName));
+						parseEndCategory();
+						// Delete the separator
+						src.delete(0, 1);
+						// Continuing in the options mode, so we don't pop the parse type stack
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(":")) {
 						// End of option name
 						strOptionName = extractCurrentToken(0, idxTokenEnd).trim();
 						// Delete the separator
 						src.delete(0, 1);
+						// Continuing in the options mode, so we don't pop the parse type stack
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals("]")) {
 						// End options
 						parseEndCategory();	// Extracts token, ends it in the right place
