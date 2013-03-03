@@ -73,9 +73,23 @@ public class ParseTopiary {
 		 * 
 		 */
 		
+		class Target {
+			protected String targetName = null;
+			protected ParseTopiaryNode targetNode = null;
+			
+			protected Target(String n) {
+				assert(n!=null);
+				targetName = n;
+			}
+			public ParseTopiaryNode getTargetNode() {
+				return targetNode;
+			}
+		}
+		
 		protected String text;
 		protected ArrayList<ParseTopiaryNode> children = new ArrayList<ParseTopiaryNode>(); 
 		protected ArrayList<String> names = new ArrayList<String>();
+		protected ArrayList<Target> targets = new ArrayList<Target>();
 		protected ParseTopiaryNode parent = null;
 
 		/* Node parser clas
@@ -98,6 +112,8 @@ public class ParseTopiary {
 			Stack<ParseStackEntry> stackParse = new Stack<ParseStackEntry>();
 
 			String extractCurrentToken(int start, int end) {
+				assert(start<src.length()) : String.format("Start index %d out of range in string \"%s\"", start, src);
+				assert(start+end<=src.length()) : String.format("End index %d out of range in string \"%s\"", end, src);
 				String result = src.substring(start, end); 
 				src.delete(start, end);
 				return result;
@@ -106,6 +122,8 @@ public class ParseTopiary {
 			// Modifies ALL data members: this function exists to avoid code dupliction
 			// a nested function would be better, if only it were possible
 			void parseEndCategory() { 
+				if (idxTokenEnd==0)
+					return;
 				String strNewToken = extractCurrentToken(0, idxTokenEnd).trim();
 				switch (stackParse.peek().parse) {
 				case pttTEXT:
@@ -117,10 +135,19 @@ public class ParseTopiary {
 							if (nameMapping.containsKey(strNewToken)) {
 								// TODO: log the error
 							} else {
-								names.add(strNewToken);
-								nameMapping.put(strNewToken, ParseTopiaryNode.this);
+								if (strNewToken.isEmpty()) {
+									// TODO: log the error
+								} else {
+									names.add(strNewToken);
+									nameMapping.put(strNewToken, ParseTopiaryNode.this);
+								}
 							}
 						} else if (strOptionName.equalsIgnoreCase("target")) {
+							if (strNewToken.isEmpty()) {
+								// TODO: log the error
+							} else {
+								targets.add(new Target(strNewToken));
+							}
 						}
 					} else {
 						// TODO: Do something useful here
@@ -146,9 +173,8 @@ public class ParseTopiary {
 						idxTokenEnd++;
 					} else if ((stackParse.peek().parse == ParseTokenType.pttTEXT) && ch.equals("(")) {
 							// Begin children
-							strText.append(src.substring(0, idxTokenEnd));
-							src.delete(0, idxTokenEnd+1);
-							idxTokenEnd = 0;
+							parseEndCategory();
+							src.delete(0, 1);
 							boolean bMoreChildren;
 							do {
 								children.add(new ParseTopiaryNode(src, ParseTopiaryNode.this));
@@ -176,8 +202,7 @@ public class ParseTopiary {
 						break;
 					} else if ((stackParse.peek().parse == ParseTokenType.pttTEXT) && ch.equals("[")) {
 						// Extract name
-						strText.append(extractCurrentToken(0, idxTokenEnd).trim());
-						idxTokenEnd = 0;
+						parseEndCategory();
 						// Delete opening brace
 						src.delete(0, 1);
 						// Begin options processing
@@ -186,14 +211,13 @@ public class ParseTopiary {
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(";")) {
 						// End of one option, start of another
 						parseEndCategory();
-						assert(strOptionName != null);
-						parseEndCategory();
 						// Delete the separator
 						src.delete(0, 1);
 						// Continuing in the options mode, so we don't pop the parse type stack
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(":")) {
 						// End of option name
 						strOptionName = extractCurrentToken(0, idxTokenEnd).trim();
+						idxTokenEnd = 0;
 						// Delete the separator
 						src.delete(0, 1);
 						// Continuing in the options mode, so we don't pop the parse type stack
@@ -226,6 +250,12 @@ public class ParseTopiary {
 			
 		}
 		
+		public boolean equals(Object other) {
+			if (other == null) return false;
+			if (other == this) return true;
+			return false;
+		}
+		
 		public String toString() {
 			StringBuilder strResult = new StringBuilder();
 			strResult.append(text);
@@ -254,6 +284,10 @@ public class ParseTopiary {
 			return names;
 		}
 		
+		public Iterable<Target> targets() {
+			return targets;
+		}
+		
 		protected void getNodeTexts(TreeMap<String, LinkedList<ParseTopiaryNode>> map, boolean includeNamedNodes) {
 //			System.out.format("names.size()=%d\n",names.size()); 
 			if (names.size() == 0 || includeNamedNodes ) {
@@ -268,6 +302,29 @@ public class ParseTopiary {
 				}
 			}
 		}
+		
+		protected void findNodeTargets() {
+			assert(nameMapping != null);
+			
+			// Find own target nodes
+			Iterator<Target> it = targets.iterator();
+			while (it.hasNext()) {
+				Target t = it.next();
+				ParseTopiaryNode node = nameMapping.get(t.targetName);
+				if (node == null) {
+					// TODO: Log this error
+					it.remove();
+				} else {
+					t.targetNode = node;
+				}
+			}
+			
+			// Find children target nodes
+			for (ParseTopiaryNode c : children) {
+				c.findNodeTargets();
+			}
+		}
+		
 	} // end of ParseTopiaryNode
 
 	protected void doParse(StringBuilder src) {
@@ -308,6 +365,9 @@ public class ParseTopiary {
 					}
 				}
 			} // Each unique node text loop
+			
+			// Get nodes to find their target nodes
+			root.findNodeTargets();
 		} else {
 			// Empty tree
 			root = null;

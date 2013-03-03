@@ -148,6 +148,52 @@ public class TestParseTopiary {
 		
 		System.out.print("passed\n");
 	}
+
+	@Test public static void testTargets() {
+		System.out.print("Testing targets...");
+		ParseTopiary pt;
+		ParseTopiaryNode n1, n2, n3;
+		Iterator<ParseTopiaryNode> itNodes;
+		Iterator<ParseTopiaryNode.Target> itTargets;
+		
+		pt = new ParseTopiary("Root(A, B[target:A]");
+		assertFalse(pt.getRoot().targets().iterator().hasNext());
+		itNodes = pt.getRoot().children().iterator();
+		assertTrue(itNodes.hasNext()); n1 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n2 = itNodes.next();
+		assertFalse(n1.targets().iterator().hasNext());
+		itTargets = n2.targets().iterator();
+		assertTrue(itTargets.hasNext());
+		n3 = itTargets.next().getTargetNode();
+		assertFalse(n3==null);
+		assertTrue(n3.equals(n1));
+		assertFalse(itTargets.hasNext());
+		
+		pt = new ParseTopiary("Root(A[target:peach], B[name:peach]");
+		assertFalse(pt.getRoot().targets().iterator().hasNext());
+		itNodes = pt.getRoot().children().iterator();
+		assertTrue(itNodes.hasNext()); n1 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n2 = itNodes.next();
+		itTargets = n1.targets().iterator();
+		assertTrue(itTargets.hasNext());
+		n3 = itTargets.next().getTargetNode();
+		assertFalse(n3==null);
+		assertTrue(n3.equals(n2));
+		
+		pt = new ParseTopiary("Root[name:watermelon](A[name:peach], B[target:watermelon]");
+		assertFalse(pt.getRoot().targets().iterator().hasNext());
+		itNodes = pt.getRoot().children().iterator();
+		assertTrue(itNodes.hasNext()); n1 = itNodes.next();
+		assertTrue(itNodes.hasNext()); n2 = itNodes.next();
+		assertFalse(n1.targets().iterator().hasNext());
+		itTargets = n2.targets().iterator();
+		assertTrue(itTargets.hasNext());
+		n3 = itTargets.next().getTargetNode();
+		assertFalse(n3==null);
+		assertTrue(n3.equals(pt.getRoot()));
+		
+		System.out.print("passed\n");
+	}
 	
 	@Test public static void testParseOptions() {
 		System.out.print("Testing node parsing with options...");
@@ -180,6 +226,7 @@ public class TestParseTopiary {
 		testBasicParseNodes();
 		testDefaultNames();
 		testExplicitNames();
+		testTargets();
 //		testParseOptions();
     }    
 
