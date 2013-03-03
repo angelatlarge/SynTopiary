@@ -23,8 +23,11 @@
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Stack;
+import java.util.TreeMap;
 
 import org.apache.pivot.util.ListenerList;
 
@@ -46,8 +49,19 @@ public class ParseTopiary {
     }
     
 	
+	/** 
+	 * Root node of the tree
+	 */
 	protected ParseTopiaryNode root;
+	/** 
+	 * String specification for the tree
+	 */
 	protected String parseString;
+	/** 
+	 * Mapping of node names to nodes themselves. Built during parsing
+	 */
+	protected HashMap<String, ParseTopiaryNode> nameMapping = null;
+	
 	
 	protected enum ParseTokenType {
 		pttTEXT, pttOPTIONS
@@ -55,8 +69,14 @@ public class ParseTopiary {
 
 	
 	public class ParseTopiaryNode {
+		/* NodeOption class
+		 * 
+		 */
 		class NodeOption {
 		};
+		class NodeOptionName {
+			
+		}
 		class NodeOptionGeneric extends NodeOption {
 			String text;
 			NodeOptionGeneric(String s) {
@@ -74,8 +94,13 @@ public class ParseTopiary {
 		
 		protected String text;
 		protected ArrayList<ParseTopiaryNode> children = new ArrayList<ParseTopiaryNode>(); 
-		protected ArrayList<NodeOption> options = new ArrayList<NodeOption>(); 
+		protected ArrayList<NodeOption> options = new ArrayList<NodeOption>();
+		protected ArrayList<String> names = new ArrayList<String>();
+		protected ParseTopiaryNode parent = null;
 
+		/* Node parser clas
+		 * 
+		 */
 		class NodeParser {
 			StringBuilder nodeText = new StringBuilder();
 			String optionName = null;
@@ -108,10 +133,19 @@ public class ParseTopiary {
 					break;
 				case pttOPTIONS:
 					if (strOptionName != null) {
+						if (strOptionName.equalsIgnoreCase("name")) {
+							if (nameMapping.containsKey(strNewToken)) {
+								// TODO: log the error
+							} else {
+								names.add(strNewToken);
+								nameMapping.put(strNewToken, ParseTopiaryNode.this);
+							}
+						}
 						options.add(new NodeOptionNameValue(strOptionName, strNewToken));
 					} else {
 						options.add(new NodeOptionGeneric(strNewToken));
 					}
+					strOptionName = null;
 					break;
 				default:
 					assert(false);
@@ -137,7 +171,7 @@ public class ParseTopiary {
 							idxTokenEnd = 0;
 							boolean bMoreChildren;
 							do {
-								children.add(new ParseTopiaryNode(src));
+								children.add(new ParseTopiaryNode(src, ParseTopiaryNode.this));
 //								System.out.format("Ended a child call. src=\"%s\"\n", src);
 								bMoreChildren = false;
 								if (src.length()>0) {
@@ -197,9 +231,11 @@ public class ParseTopiary {
 			}
 		}
 		
-		protected ParseTopiaryNode(StringBuilder src) {
+		protected ParseTopiaryNode(StringBuilder src, ParseTopiaryNode nodeParent) {
 			// We use the node parses to actually do the parsing
+			parent = nodeParent;
 			new NodeParser(src);
+			
 		}
 		
 		public String toString() {
@@ -225,16 +261,81 @@ public class ParseTopiary {
 		public Iterable<ParseTopiaryNode> children() {
 			return children;
 		}
+
+		public Iterable<String> names() {
+			return names;
+		}
+		
+		protected void getNodeTexts(TreeMap<String, LinkedList<ParseTopiaryNode>> map, boolean includeNamedNodes) {
+//			System.out.format("names.size()=%d\n",names.size()); 
+			if (names.size() == 0 || includeNamedNodes ) {
+				LinkedList<ParseTopiaryNode> ll = map.get(text);
+				if (ll == null) {
+					ll = new LinkedList<ParseTopiaryNode>();
+					map.put(text, ll);
+				}
+				ll.add(this);
+				for (ParseTopiaryNode c : children) {
+					c.getNodeTexts(map, includeNamedNodes);
+				}
+			}
+		}
 	} // end of ParseTopiaryNode
 
-	public ParseTopiary() {
-		parseString = null;
-		root = null;
+	protected void doParse(StringBuilder src) {
+		if (src!=null) {
+			nameMapping = new HashMap<String, ParseTopiaryNode>();
+			root = new ParseTopiaryNode(src, null);
+			assert(root != null);
+			
+			// Assign default names to nodes
+			// 1. Get node texts
+			TreeMap<String,  LinkedList<ParseTopiaryNode>> nodeTexts = new TreeMap<String, LinkedList<ParseTopiaryNode>>();
+			root.getNodeTexts(nodeTexts, false);
+			// 2. Now node texts contains all nodes that do not have a name
+			for (String text : nodeTexts.keySet()) {
+				
+				LinkedList<ParseTopiaryNode> llText = nodeTexts.get(text);
+				assert(llText != null);
+				ParseTopiaryNode node = llText.getFirst(); 
+				if (node == llText.getLast()) {
+					// There is only a single element with this text
+					// Go ahead and name it after the text
+					node.names.add(text);
+					nameMapping.put(text, node);
+				} else {
+					/* More than one element with this name
+					 * If the name does not end with a number, then add a running number
+					 * If the name DOES end with a number, then add an underscore + number */
+					String strNamePrefix_T;
+					if (Character.isDigit(text.charAt(text.length()-1))) {
+						strNamePrefix_T = String.format("%s_%s", text, "%d");
+					} else {
+						strNamePrefix_T = String.format("%s", "%d");
+					}
+					int idxNode = 1;
+					while (!llText.isEmpty()) {
+						node = llText.removeFirst();
+						node.names.add(String.format(strNamePrefix_T, idxNode++));
+					}
+				}
+			} // Each unique node text loop
+		} else {
+			// Empty tree
+			root = null;
+			nameMapping = null;
+		}
+		
 	}
 	
 	public ParseTopiary(StringBuilder src) {
 		parseString = src.toString();
-		root = new ParseTopiaryNode(src);
+		doParse(src);
+	}
+	
+	protected ParseTopiary() {
+		parseString = null;
+		root = null;
 	}
 	
 	public ParseTopiary(String src) {
@@ -260,9 +361,9 @@ public class ParseTopiary {
 		if (parseString != null) {
 			StringBuilder s = new StringBuilder();
 			s.append(src);
-			root = new ParseTopiaryNode(s);
+			doParse(s);
 		} else {
-			root = null;
+			doParse(null);
 		}
 //		System.out.format("Notifying listeners of changes: new string is %s...\n", parseString);
 		parseTopiaryListeners.parseTopiaryChanged(this);

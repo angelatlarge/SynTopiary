@@ -90,6 +90,39 @@ public class TestParseTopiary {
 		
 		System.out.print("passed\n");
 	}
+
+	@Test public static void testNodeNames(ParseTopiaryNode n, String... args) {
+		Iterator itNode = n.names().iterator();
+		int i = 0;
+	    for (String arg : args) {
+	    	assertTrue(String.format("Node is missing %d-th name", i), itNode.hasNext());
+	    	assertTrue(arg.equals(itNode.next()));
+	    	i++;
+	    }
+	    assertFalse(itNode.hasNext());
+	}
+
+	@Test public static void testDefaultNames() {
+		System.out.print("Testing default names...");
+		ParseTopiary pt;
+	
+		
+		pt = new ParseTopiary("A");
+		testNodeNames(pt.getRoot(), "A");
+		
+		pt = new ParseTopiary("A(B(C), D)");
+		testNodeNames(pt.getRoot(), "A");
+		testNodeNames(pt.getRoot().children().iterator().next(), "B");
+		testNodeNames(pt.getRoot().children().iterator().next().children().iterator().next(), "C");
+		
+		pt = new ParseTopiary(" Kenneth Pike ( Edward Sapir ( Benjamin Worf ), Kenneth Hale)");
+		testNodeNames(pt.getRoot(), "Kenneth Pike");
+		testNodeNames(pt.getRoot().children().iterator().next(), "Edward Sapir");
+		testNodeNames(pt.getRoot().children().iterator().next().children().iterator().next(), "Benjamin Worf");
+		
+		System.out.print("passed\n");
+		
+	}
 	
 	@Test public static void testParseOptions() {
 		System.out.print("Testing node parsing with options...");
@@ -120,7 +153,8 @@ public class TestParseTopiary {
 	
 	public static void main(String[] args) {
 		testBasicParseNodes();
-		testParseOptions();
+		testDefaultNames();
+//		testParseOptions();
     }    
 
 }
