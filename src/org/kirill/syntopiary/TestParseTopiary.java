@@ -92,11 +92,12 @@ public class TestParseTopiary {
 	}
 
 	@Test public static void testNodeNames(ParseTopiaryNode n, String... args) {
-		Iterator itNode = n.names().iterator();
+		Iterator<String> itNode = n.names().iterator();
 		int i = 0;
 	    for (String arg : args) {
 	    	assertTrue(String.format("Node is missing %d-th name", i), itNode.hasNext());
-	    	assertTrue(arg.equals(itNode.next()));
+	    	String nodeName = itNode.next();
+	    	assertTrue(String.format("Expected node name %s, but instead got %s", arg, nodeName), arg.equals(nodeName));
 	    	i++;
 	    }
 	    assertFalse(itNode.hasNext());
@@ -124,10 +125,28 @@ public class TestParseTopiary {
 		
 	}
 	
+	@Test public static void testExplicitNames() {
+		System.out.print("Testing explicit names...");
+		ParseTopiary pt;
+		ParseTopiaryNode n;
+		Iterator<ParseTopiaryNode> it;
+
+		pt = new ParseTopiary("Apple[name:orange]");
+		testNodeNames(pt.getRoot(), "orange");
+		pt = new ParseTopiary("Apple(pear[name:orange], banana[ name: Peach ]");
+		testNodeNames(pt.getRoot(), "Apple");
+		testNodeNames(pt.getRoot().children().iterator().next(), "orange");
+		it = pt.getRoot().children().iterator();
+		assertTrue(it.hasNext()); n = it.next();
+		assertTrue(it.hasNext()); n = it.next();
+		testNodeNames(n, "Peach");
+		
+		System.out.print("passed\n");
+	}
 	@Test public static void testParseOptions() {
 		System.out.print("Testing node parsing with options...");
 		ParseTopiary pt;
-
+		
 		// Basic options
 		pt = new ParseTopiary("My node[options]");
 		assertPTnode(pt.getRoot(), "My node");
@@ -154,6 +173,7 @@ public class TestParseTopiary {
 	public static void main(String[] args) {
 		testBasicParseNodes();
 		testDefaultNames();
+		testExplicitNames();
 //		testParseOptions();
     }    
 

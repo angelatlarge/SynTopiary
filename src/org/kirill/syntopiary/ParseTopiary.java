@@ -198,7 +198,9 @@ public class ParseTopiary {
 						// Extract name
 						strText.append(extractCurrentToken(0, idxTokenEnd).trim());
 						idxTokenEnd = 0;
-						// Begin options
+						// Delete opening brace
+						src.delete(0, 1);
+						// Begin options processing
 						stackParse.push(new ParseStackEntry(ParseTokenType.pttOPTIONS));
 						strOptionName = null;
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(";")) {
@@ -209,6 +211,8 @@ public class ParseTopiary {
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals(":")) {
 						// End of option name
 						strOptionName = extractCurrentToken(0, idxTokenEnd).trim();
+						// Delete the separator
+						src.delete(0, 1);
 					} else if ((stackParse.peek().parse == ParseTokenType.pttOPTIONS) && ch.equals("]")) {
 						// End options
 						parseEndCategory();	// Extracts token, ends it in the right place
