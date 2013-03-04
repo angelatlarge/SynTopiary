@@ -73,5 +73,11 @@
 				<Checkbox bxml:id="chkDebugDrawBoxFull" buttonData="Box:Full"/>
 			</FlowPane>
 		</TablePane.Row>
+		<TablePane.Row height="-1">
+			<FillPane>
+				<Label text="Ready"/>
+			</FillPane>
+		</TablePane.Row>
+		
 	</TablePane>
 </syntopiary:SyntopWindow>	
