@@ -315,18 +315,25 @@ public class ParseTopiary {
 		}
 		
 		protected void findNodeTargets() {
+//			System.out.format("Finding target nodes\n");
 			assert(nameMapping != null);
 			
 			// Find own target nodes
-			Iterator<ParseTopiaryConnection> it = targets.iterator();
-			while (it.hasNext()) {
-				ParseTopiaryConnection t = it.next();
-				ParseTopiaryNode node = nameMapping.get(t.targetName);
+			for (Iterator<ParseTopiaryConnection> it = targets.iterator(); it.hasNext() ; ) {
+				ParseTopiaryConnection conn = it.next(); 
+				ParseTopiaryNode node = nameMapping.get(conn.targetName);
 				if (node == null) {
 					// TODO: Log this error
+//					int nCountBefore = targets.size();
+					System.out.format("Unable to find target node with name %s\n" , conn.targetName);
 					it.remove();
+					// We also need to remove it from the connections list
+					connections.remove(conn);
+//					assert targets.size() == nCountBefore-1 : "Tried to remove a connection an failed";
+//					System.out.format("New targets size: %d\n", targets.size());
 				} else {
-					t.targetNode = node;
+//					System.out.format("Found target correctly\n");
+					conn.targetNode = node;
 				}
 			}
 			
@@ -482,12 +489,18 @@ public class ParseTopiary {
 					if (Character.isDigit(text.charAt(text.length()-1))) {
 						strNamePrefix_T = String.format("%s_%s", text, "%d");
 					} else {
-						strNamePrefix_T = String.format("%s", "%d");
+						strNamePrefix_T = String.format("%s%s", text, "%d");
 					}
+//					System.out.format("Using name prefix %s\n", strNamePrefix_T);
 					int idxNode = 1;
 					while (!llText.isEmpty()) {
+						// Get the node to work on
 						node = llText.removeFirst();
-						node.names.add(String.format(strNamePrefix_T, idxNode++));
+						// Assign it a name
+						String strName = String.format(strNamePrefix_T, idxNode++); 
+						node.names.add(strName);
+						// Add the name mapping
+						nameMapping.put(strName, node);
 					}
 				}
 			} // Each unique node text loop

@@ -472,10 +472,15 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     		parseConnection = parseTopiaryConnection;
     		
     		// Find the source and target nodes
-    		sourceNode = rootSkinNode.findNodeForParseNode(parseConnection.getSourceNode());
-    		assert(sourceNode != null);
-    		targetNode = rootSkinNode.findNodeForParseNode(parseConnection.getTargetNode());
-    		assert(targetNode != null);
+    		ParseTopiaryNode parseSourceNode = parseConnection.getSourceNode();
+    		assert(parseSourceNode != null);
+    		sourceNode = rootSkinNode.findNodeForParseNode(parseSourceNode);
+    		assert(sourceNode != null) : String.format("Unable to find source node named %s", parseSourceNode.getText());
+    		
+    		ParseTopiaryNode parseTargetNode = parseConnection.getTargetNode();
+    		assert(parseTargetNode != null);
+    		targetNode = rootSkinNode.findNodeForParseNode(parseTargetNode);
+    		assert(targetNode != null) : String.format("Unable to find target node named %s", parseTargetNode.getText());
     	}
 
 //    			ByLengthComparator();

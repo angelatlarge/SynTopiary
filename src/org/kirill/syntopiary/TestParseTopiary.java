@@ -106,6 +106,8 @@ public class TestParseTopiary {
 	@Test public static void testDefaultNames() {
 		System.out.print("Testing default names...");
 		ParseTopiary pt;
+		Iterator<ParseTopiaryNode> it;
+		ParseTopiaryNode n1, n2, n3, n4, n5;
 	
 		
 		pt = new ParseTopiary("A");
@@ -121,6 +123,20 @@ public class TestParseTopiary {
 		testNodeNames(pt.getRoot().children().iterator().next(), "Edward Sapir");
 		testNodeNames(pt.getRoot().children().iterator().next().children().iterator().next(), "Benjamin Worf");
 		
+		pt = new ParseTopiary("Root(A, B, B, C, A)");
+		it = pt.getRoot().children().iterator();
+		assertTrue(it.hasNext()); n1 = it.next();
+		assertTrue(it.hasNext()); n2 = it.next();
+		assertTrue(it.hasNext()); n3 = it.next();
+		assertTrue(it.hasNext()); n4 = it.next();
+		assertTrue(it.hasNext()); n5 = it.next();
+		assertFalse(it.hasNext());
+		testNodeNames(n1, "A1");
+		testNodeNames(n2, "B1");
+		testNodeNames(n3, "B2");
+		testNodeNames(n4, "C");
+		testNodeNames(n5, "A2");
+		
 		System.out.print("passed\n");
 		
 	}
@@ -130,7 +146,6 @@ public class TestParseTopiary {
 		ParseTopiary pt;
 		ParseTopiaryNode n;
 		Iterator<ParseTopiaryNode> it;
-
 		// Regular names
 		pt = new ParseTopiary("Apple[name:orange]");
 		testNodeNames(pt.getRoot(), "orange");
