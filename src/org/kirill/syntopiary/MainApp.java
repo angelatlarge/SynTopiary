@@ -30,9 +30,7 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Draw target arrows
  * TODO: Automatic empty parents for orphaned children
- * TODO: Javadoc
  * TODO: EPS copy
  * TODO: CGM file support?
  * TODO: Copy and paste text in the tree specification

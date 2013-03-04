@@ -17,6 +17,9 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ImageObserver;
@@ -46,6 +49,7 @@ public class LEPSGraphics2D extends Graphics2D {
 
 	}
 
+	@SuppressWarnings("unused")
 	private void doNotImplemented() {
 		if (true)
 			assert false : "Not implemented";
@@ -64,7 +68,19 @@ public class LEPSGraphics2D extends Graphics2D {
 	}
 
 	@Override
-	public void draw(Shape arg0) {
+	public void draw(Shape shape) {
+		if (shape instanceof CubicCurve2D) {
+			CubicCurve2D cubicCurve2D = (CubicCurve2D) shape;
+			content.append(String.format("%d %d moveto\n", Math.round(cubicCurve2D.getX1()), Math.round(yTop - cubicCurve2D.getY1())));
+			content.append(String.format("%d %d %d %d %d %d curveto\n", 
+					Math.round(cubicCurve2D.getCtrlP1().getX()), Math.round(yTop-cubicCurve2D.getCtrlP1().getY()),  
+					Math.round(cubicCurve2D.getCtrlP2().getX()), Math.round(yTop-cubicCurve2D.getCtrlP2().getY()),  
+					Math.round(cubicCurve2D.getX2()), Math.round(yTop-cubicCurve2D.getY2())
+					));
+//			content.append("closepath\n");
+			content.append("stroke\n");
+			return;
+		}
 		doNotImplemented();
 	}
 
@@ -125,7 +141,35 @@ public class LEPSGraphics2D extends Graphics2D {
 	}
 
 	@Override
-	public void fill(Shape arg0) {
+	public void fill(Shape shape) {
+		assert(shape != null);
+		if (shape instanceof Path2D) {
+			float startX=0, startY=0;
+			for (PathIterator pi = shape.getPathIterator(null); !pi.isDone(); pi.next()) {
+			    // The type will be SEG_LINETO, SEG_MOVETO, or SEG_CLOSE
+			    // Because the Area is composed of straight lines
+				float[] coords = new float[6];
+			    int segmentType = pi.currentSegment(coords);
+			    switch (segmentType) {
+			    case PathIterator.SEG_MOVETO:
+			    	startX = coords[0];
+					startY = coords[1];
+					content.append(String.format("%d %d moveto\n", Math.round(startX), Math.round(yTop-startY)));
+					break;
+			    case PathIterator.SEG_LINETO:
+					content.append(String.format("%d %d lineto\n", Math.round(coords[0]), Math.round(yTop-coords[1])));
+					break;
+			    case PathIterator.SEG_CLOSE:
+					content.append("closepath\n");
+//			    	content.append(String.format("%d %d lineto\n", Math.round(startX), Math.round(startY)));
+			    	break;
+			    }
+			}
+//			content.append("closepath\n");
+			content.append("0.0 setgray\n");
+			content.append("fill\n");
+			return;
+		}
 		doNotImplemented();
 	}
 

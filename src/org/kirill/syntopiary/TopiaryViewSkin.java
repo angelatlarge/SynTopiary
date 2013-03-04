@@ -466,7 +466,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	 * Lays out the geometry of the connection arrow
     	 * 
     	 */	
-    	protected void layout() {
+    	@SuppressWarnings("unused")
+		protected void layout() {
     		/*
     		 * Strategy:
     		 * TODO: Resolve connection points (deal with multiple)
@@ -527,7 +528,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        	((Path2D)arrowHead).moveTo(xAH1, yAH1);
 	        	((Path2D)arrowHead).lineTo(xAH1-arrowHeadWidth/2, yAH1+arrowHeadLength);
 	        	((Path2D)arrowHead).lineTo(xAH1+arrowHeadWidth/2, yAH1+arrowHeadLength);
-	        	((Path2D)arrowHead).lineTo(xAH1, yAH1);
+//	        	((Path2D)arrowHead).lineTo(xAH1, yAH1);
+	        	((Path2D)arrowHead).closePath();
     		}
     	}
     	
@@ -800,10 +802,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        thunk.StreamOut(writerOut);
 		} catch (Exception e) {
 			String msg = String.format("Could not save as %s\nException of type %s\nwith the message\n\"%s\"", filetypeName, e.getClass().toString(), e.getMessage()); 
-			Alert.alert(MessageType.INFO, msg, null);
 			System.out.print(msg);
 			System.out.print("\n");
 			e.printStackTrace();
+			Alert.alert(MessageType.INFO, msg, null);
 		} finally {
 			try {
 				if (writerOut != null) writerOut.close();
