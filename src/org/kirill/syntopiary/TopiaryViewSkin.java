@@ -26,12 +26,15 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.PrintGraphics;
+import java.awt.Shape;
 import java.awt.datatransfer.Clipboard;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -70,7 +73,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	private float nNodeXMargin = 4.0f;
 	private float nNodeYMargin = 2.0f;
 	private float minYNodeSpacing = 7.0f;
-    private float lineSlope = 0.125f;
+	private float lineSlope = 0.125f;
+	private float arrowTopMargin = 10f;
+	private float arrowHeadWidth = 4.0f;
+    private float arrowHeadLength = 5.0f;
 	
 	/** 
 	 * This class implements the graphical side of each tree node
@@ -367,6 +373,53 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             return null;
 	    }
             
+		/** 
+		 * SkinNode.findNodeForParseNode(ParseTopiaryNode)
+		 * 
+		 * Called to find a SkinNode for a particular ParseTopiaryNode
+		 * 
+		 * This function is a bit slow now
+		 * 
+		 */	
+	    SkinNode findLowestNodeBetween(SkinNode A, SkinNode B) {
+	    	int compareA = parseNode.compareTo(A.parseNode); 
+	    	int compareB = parseNode.compareTo(B.parseNode); 
+	    	
+	    	boolean thisNodeIsAnAncestor = 
+	    			A.parseNode.hasAsAncestor(parseNode) || B.parseNode.hasAsAncestor(parseNode);
+	    	
+	    	if (!thisNodeIsAnAncestor && (( compareA < 0 ) || ( compareB > 0 ))  ) {
+	    		return null;
+	    	}
+	    	if (children.size()>0) {
+	    		// Process chilren
+	    		// (we do not need to process self if we have children, 
+	    		// the children will always be lower than this node)
+	    		SkinNode lowestNode = null;
+	    		float nLowY = 0;		// Initialize to pacify Eclipse, though there is no need
+	            for (SkinNode childNode : children) {
+	            	SkinNode newNode = childNode.findLowestNodeBetween(A, B);
+	            	if (newNode != null) {
+	            		if (lowestNode==null) {
+	            			lowestNode = newNode;
+	            			nLowY = newNode.nodeBoxHeight + newNode.y;
+	            		} else {
+	            			float nNewNodeHeight = newNode.nodeBoxHeight + newNode.y;
+	            			if (nNewNodeHeight > nLowY) {
+	            				nLowY = nNewNodeHeight;
+	            				lowestNode = newNode;
+	            			}
+	            		}
+	            	} // else newNode is null, so don't update lowestNode
+	            }
+	            return lowestNode;
+	    	} else {
+	    		if ( (compareA==0) || (compareB==0) ) {
+	    			return null;
+	    		}
+	    		return this;
+	    	}
+	    }
     } // End of SkinNode 
 	
     
@@ -380,9 +433,15 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	ParseTopiaryConnection parseConnection = null;
     	SkinNode sourceNode = null;
     	SkinNode targetNode = null;
-    	@SuppressWarnings("unused")
-    	CubicCurve2D curves[] = null;
     	
+    	/**
+    	 * Two bezier curves for the arrow
+    	 */
+    	CubicCurve2D curves[] = null;
+    	/**
+    	 * Polygon for the arrow head
+    	 */
+    	Shape arrowHead = null;    	
     	/** 
     	 * SkinConnection.SkinConnection(parentSkin, parseTopiaryConnection)
     	 * 
@@ -409,24 +468,38 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	 */	
     	protected void layout() {
     		/*
-    		 * Resolve connection points (deal with multiple)
-    		 * Find lowest nodes in between and make sure that we are lower
+    		 * Strategy:
+    		 * TODO: Resolve connection points (deal with multiple)
+    		 * DONE: Find lowest nodes in between and make sure that we are lower
+    		 * TODO: What to do about source nodes that have their own children?
+    		 * TODO: Deal with multiple arrows in the same horizontal "corridor". How to resolve
+    		 * 			* Completely enclosed arrows are higher
+    		 * 			* Shorter arrows are higher
+    		 * 			* Arrows that start lower stay lower (what is the right concept of "start")
+    		 * TODO: EPS export does not support arrow right now
     		 */
-    		if (curves != null) {
-    			curves = null;
-    		}
     		curves = new CubicCurve2D[2];
-    		System.out.format("Curve from %f %f to %f %f", 
-				sourceNode.x + sourceNode.connectionPointX, 
-				sourceNode.y + sourceNode.nodeBoxHeight, 
-				targetNode.x + targetNode.connectionPointX, 
-				targetNode.y + targetNode.nodeBoxHeight
-				);
-    		float yCurveBottom = 
-    				Math.max(
-    					sourceNode.y + sourceNode.nodeBoxHeight, 
-    					targetNode.y + targetNode.nodeBoxHeight) 
-    				+ 20;
+    		
+    		// Find the lowest node that we might have to deal with
+    		SkinNode left;
+    		SkinNode right;
+    		if (sourceNode.parseNode.compareTo(targetNode.parseNode) < 0) {
+    			left = sourceNode; 
+    			right = targetNode; 
+    		} else {
+    			left = targetNode; 
+    			right = sourceNode; 
+    		}
+    		SkinNode middleLowNode = TopiaryViewSkin.this.rootSkinNode.findLowestNodeBetween(left, right);
+
+    		// Compute the lowest curve point
+    		float yCurveBottom = Math.max(sourceNode.y + sourceNode.nodeBoxHeight, targetNode.y + targetNode.nodeBoxHeight);
+    		if (middleLowNode != null) {
+    			yCurveBottom = Math.max(yCurveBottom, middleLowNode.nodeBoxHeight + middleLowNode.y);
+    		}
+    		yCurveBottom += arrowTopMargin;
+    		
+    		// Compute the midpoint of the curve
     		float xCurveCenter =
     				(
     					  (sourceNode.x + sourceNode.connectionPointX) 
@@ -440,7 +513,22 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	    				n.x + n.connectionPointX, yCurveBottom, 
 	    				xCurveCenter, yCurveBottom); 
     		}
-    		
+    		// Polygon for the arrow head
+        	float xAH1 = targetNode.x + targetNode.connectionPointX; 
+        	float yAH1 = targetNode.y + targetNode.nodeBoxHeight; 
+    		if (false) {
+	        	arrowHead = new Polygon();
+				((Polygon)arrowHead).addPoint(Math.round(xAH1), Math.round(yAH1));
+				((Polygon)arrowHead).addPoint(Math.round(xAH1-(arrowHeadWidth/2)), Math.round(yAH1+arrowHeadLength));
+				((Polygon)arrowHead).addPoint(Math.round(xAH1+(arrowHeadWidth/2)), Math.round(yAH1+arrowHeadLength));
+				((Polygon)arrowHead).addPoint(Math.round(xAH1), Math.round(yAH1));
+    		} else {
+	        	arrowHead = new Path2D.Float();
+	        	((Path2D)arrowHead).moveTo(xAH1, yAH1);
+	        	((Path2D)arrowHead).lineTo(xAH1-arrowHeadWidth/2, yAH1+arrowHeadLength);
+	        	((Path2D)arrowHead).lineTo(xAH1+arrowHeadWidth/2, yAH1+arrowHeadLength);
+	        	((Path2D)arrowHead).lineTo(xAH1, yAH1);
+    		}
     	}
     	
 		/** 
@@ -453,16 +541,18 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		 * 
 		 */	
     	protected void paint(Graphics2D graphics) {
-    		// TODO: Do painting here
+    		// TODO: Paint arrows
     		assert(curves != null);
     		for (CubicCurve2D curve : curves) {
     			assert(curve != null);
     			graphics.draw(curve);
     		}
-    		return;
+    		assert(arrowHead != null);
+    		graphics.setPaint(Color.black);
+    		graphics.fill(arrowHead);
     	}
     	
-    };
+    }; // SkinConnection
     
     private Color backgroundColor = null;
 
