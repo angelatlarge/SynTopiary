@@ -32,10 +32,28 @@
 		<!-- Compile the java code from ${src} into ${build} -->
 		
 			
-		<javac srcdir="${src}" destdir="${build}">
+		<javac 
+			srcdir="${src}"
+			excludes="**/Test*.java"
+			destdir="${build}"
+			>
+		
+		
+<!--
+			<fileset dir="${src}"
+				excludes="**/Test*.java"
+			/>
+			<src path="${src}" />
+			<exclude name="${src}/org/kirill/syntopiary/Test*.java"/>
+-->
 			<classpath refid="master-classpath"/>
 		</javac>
-		
+<!--
+  <fileset dir="${src}"
+           includes="**/images/*"
+           excludes="**/*.gif"
+  />
+-->
 		<copy file="${src}/org/kirill/syntopiary/syntop.bxml" todir="${build}/org/kirill/syntopiary"/>
 		<copy file="${src}/org/kirill/syntopiary/syntop.bxml" todir="${build}"/>
 
