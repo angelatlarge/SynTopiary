@@ -157,6 +157,17 @@ color:#aba;
 font-size:15px;
 }
   
+div.tight p {
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+}
+div.tight TT {
+	background-color: #004040;
+}
+div.tight UL {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
 -->
 </style>
 </head>
@@ -227,6 +238,51 @@ font-size:15px;
 	</ul>
 </div>
 
+<div class="simple_overlay" id="ovrHelp">
+<div class="tight">
+<h2>tree syntax</h2>
+<p>basic tree structure
+	<ul>
+	<li>Open parenthesis begins a list of children
+	<li>Close parenthesis ends a list of children
+	<li>Children are separated by commas, 
+	therefore, the string <TT>A(B, C)</TT> 
+	creates a tree with node <TT>A</TT> at the root
+	and two children of <TT>A</TT>, namely <TT>B</TT> and <TT>C</TT>
+	<li>Nodes need not have text (useful for bare phrase structure, for instance), 
+	as in <TT>CP(C, (T, AspP(, ...)</TT>
+	<li>To have parenthesis and the comma be treated as text, 
+	preceed them with backslash (<TT>\</TT>). 
+	To use the backslash itself, use a double backslash (<TT>\\</TT>)
+	</ul>
+<p>movement arrows
+	<ul>
+	<li>Drawing movement arrows relies on <b>node names</b>, 
+	which are given via the <TT>name</TT> option in square brackets.
+	In the tree <TT>A(B, C[name:krusty])</TT> 
+	the second daughter of <TT>A</TT> has the name <TT>krusty</TT>.
+	<P>All nodes without explicit names 
+	are assigned default names based on their strings.
+	In the  tree  <TT>A(B, C)</TT>, the root node has the name <TT>A</TT>, 
+	its first daughter is named <TT>B</TT>, and so on.
+	If there are multiple nodes with the same text, numbers are appended to the names.
+	<li>Movement arrows are indicated via the <TT>target</TT> option in square brackets, 
+	where the target option specifies the name of the node to draw the arrow towards.
+	In a tree <TT>A(B, C[target:B])</TT> an arrow will be drawn from 
+	node <TT>C</TT> to node <TT>B</TT>
+	</ul>	
+<p>not supported yet
+	<ul>
+	<li>Hats over nodes
+	<li>Formatting nodes: bold, sub-/super-script, italics, size
+	<li>Text on movement arrows, different styles of movement arrows
+	<li>Phases
+	<li>Ellipsis blocks
+	</ul>
+	
+</div>
+</div>
+
 <div class="simple_overlay" id="ovrFeedback">
 	<div id="contact_form">
 		<h2>feedback</h2>
@@ -267,6 +323,7 @@ To make a syntactic tree:
 </ol>
 
 <P class="smallblack">
+	<a href="#" rel="#ovrHelp">[tree syntax help]</a>
 	<a href="#" rel="#ovrCompatibility">[compatibility]</a>&nbsp;
 	<a href="#" rel="#ovrFeedback">[feedback]</a>
 </P>
