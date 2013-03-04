@@ -337,7 +337,7 @@ public class TestParseTopiary {
 		nComparison = nB.compareTo(nB);
 		assertTrue(nComparison == 0);
 		
-		if (ExpectedResult<0) ExpectedResult = -1;	if (ExpectedResult>0) ExpectedResult = 1;
+		ExpectedResult = Integer.signum(ExpectedResult);
 		
 		for (int i=0;i<2;i++) {
 			if (i==0) {
@@ -346,8 +346,7 @@ public class TestParseTopiary {
 				nComparison = nB.compareTo(nA);
 				ExpectedResult = -ExpectedResult;
 			}
-			if (nComparison<0) nComparison = -1; 		
-			if (nComparison>0) nComparison = 1;			
+			nComparison = Integer.signum(nComparison);
 			
 			assertTrue(String.format("Expected comparison to result in %d, but got %d", nComparison, ExpectedResult), nComparison == ExpectedResult);
 		}

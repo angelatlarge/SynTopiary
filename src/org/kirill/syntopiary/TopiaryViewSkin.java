@@ -47,6 +47,9 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.StringCharacterIterator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import org.apache.pivot.collections.ArrayList;
 import org.apache.pivot.wtk.Alert;
@@ -69,6 +72,7 @@ import org.w3c.dom.DOMImplementation;
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryConnection;
 import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 
+
 public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener, TopiaryViewListener {
 	private float nNodeXMargin = 4.0f;
 	private float nNodeYMargin = 2.0f;
@@ -76,7 +80,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	private float lineSlope = 0.125f;
 	private float arrowTopMargin = 10f;
 	private float arrowHeadWidth = 4.0f;
-    private float arrowHeadLength = 5.0f;
+	private float arrowHeadLength = 5.0f;
+    private float arrowHorzCorridorYMargin = 10.0f;
 	
 	/** 
 	 * This class implements the graphical side of each tree node
@@ -423,6 +428,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     } // End of SkinNode 
 	
     
+	static final Comparator<SkinConnection> CONNECTIONS_BYLENGTH = new Comparator<SkinConnection>() {
+	    @Override 
+	    public int compare(SkinConnection conn1, SkinConnection conn2) {
+    		return (int)Math.round(conn1.bounds.getWidth() - conn2.bounds.getWidth()); 
+	    }
+	};
+    
 	/** 
 	 * Class implementing a connection (movement arrow) between two nodes
 	 * 
@@ -433,7 +445,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	ParseTopiaryConnection parseConnection = null;
     	SkinNode sourceNode = null;
     	SkinNode targetNode = null;
+    	float curveBottom;
+    	float curveMidpointX;
     	
+    	/**
+    	 * Two bezier curves for the arrow
+    	 */
+    	Rectangle2D bounds = null;
     	/**
     	 * Two bezier curves for the arrow
     	 */
@@ -459,15 +477,24 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     		targetNode = rootSkinNode.findNodeForParseNode(parseConnection.getTargetNode());
     		assert(targetNode != null);
     	}
+
+//    			ByLengthComparator();
+//    	static final Comparator<SkinConnection> BY_LENGTH = new ByLengthComparator();
+//    	
+//	    	private class ByLengthComparator implements Comparator<SkinConnection> {
+//	        	public int compare(SkinConnection conn1, SkinConnection conn2) {
+//	        		return (int)Math.round(conn1.bounds.getWidth() - conn2.bounds.getWidth()); 
+//	        	}
+//	        };
     	
     	/** 
-    	 * SkinConnection.layout()
+    	 * SkinConnection.initialLayout()
     	 * 
-    	 * Lays out the geometry of the connection arrow
+    	 * Lays out the geometry of the connection arrow:
+    	 * calculates the dimensions and the connection points
     	 * 
     	 */	
-    	@SuppressWarnings("unused")
-		protected void layout() {
+		protected void initialLayout() {
     		/*
     		 * Strategy:
     		 * TODO: Resolve connection points (deal with multiple)
@@ -477,42 +504,64 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     		 * 			* Completely enclosed arrows are higher
     		 * 			* Shorter arrows are higher
     		 * 			* Arrows that start lower stay lower (what is the right concept of "start")
-    		 * TODO: EPS export does not support arrow right now
     		 */
     		curves = new CubicCurve2D[2];
     		
-    		// Find the lowest node that we might have to deal with
-    		SkinNode left;
-    		SkinNode right;
+    		// Find the lowest node that we might have to deal with   		
+    		SkinNode nodeLeft;
+    		SkinNode nodeRight;
     		if (sourceNode.parseNode.compareTo(targetNode.parseNode) < 0) {
-    			left = sourceNode; 
-    			right = targetNode; 
+    			nodeLeft = sourceNode; 
+    			nodeRight = targetNode; 
     		} else {
-    			left = targetNode; 
-    			right = sourceNode; 
+    			nodeLeft = targetNode; 
+    			nodeRight = sourceNode; 
     		}
-    		SkinNode middleLowNode = TopiaryViewSkin.this.rootSkinNode.findLowestNodeBetween(left, right);
+    		SkinNode middleLowNode = TopiaryViewSkin.this.rootSkinNode.findLowestNodeBetween(nodeLeft, nodeRight);
 
     		// Compute the lowest curve point
-    		float yCurveBottom = Math.max(sourceNode.y + sourceNode.nodeBoxHeight, targetNode.y + targetNode.nodeBoxHeight);
+    		curveBottom = Math.max(sourceNode.y + sourceNode.nodeBoxHeight, targetNode.y + targetNode.nodeBoxHeight);
     		if (middleLowNode != null) {
-    			yCurveBottom = Math.max(yCurveBottom, middleLowNode.nodeBoxHeight + middleLowNode.y);
+    			curveBottom = Math.max(curveBottom, middleLowNode.nodeBoxHeight + middleLowNode.y);
     		}
-    		yCurveBottom += arrowTopMargin;
+    		curveBottom += arrowTopMargin;
     		
     		// Compute the midpoint of the curve
-    		float xCurveCenter =
-    				(
-    					  (sourceNode.x + sourceNode.connectionPointX) 
-    					+ (targetNode.x + targetNode.connectionPointX)
-    				) / 2;
+    		float sourceX = sourceNode.x+sourceNode.connectionPointX;
+    		float targetX = targetNode.x+targetNode.connectionPointX;
+    		curveMidpointX = (sourceX + targetX) / 2;
+    		
+    		// Compute bounds
+    		float left, right;
+    		if (sourceX<targetX) {
+    			left = sourceX;
+    			right = targetX;
+    		} else {
+    			left = targetX;
+    			right = sourceX;
+    		}
+    		float sourceY = sourceNode.y + sourceNode.nodeBoxHeight;
+    		float targetY = targetNode.y + targetNode.nodeBoxHeight;
+    		float top = Math.min(sourceY, targetY);
+    		bounds = new Rectangle2D.Float(left, top, right-left, curveBottom-top);    		
+    	}
+    	
+		@SuppressWarnings("unused")
+    	/** 
+    	 * SkinConnection.finalizeLayout()
+    	 * 
+    	 * After overlaps have been avoided, 
+    	 * this method calculates the curve paths
+    	 * 
+    	 */	
+		protected void finalizeLayout() {
     		for (int i=0;i<2;i++) {
     			SkinNode n = (i==0)?sourceNode:targetNode;
 	    		curves[i] = new CubicCurve2D.Double(
 	    				n.x + n.connectionPointX, n.y + n.nodeBoxHeight, 
-	    				n.x + n.connectionPointX, yCurveBottom, 
-	    				n.x + n.connectionPointX, yCurveBottom, 
-	    				xCurveCenter, yCurveBottom); 
+	    				n.x + n.connectionPointX, curveBottom, 
+	    				n.x + n.connectionPointX, curveBottom, 
+	    				curveMidpointX, curveBottom); 
     		}
     		// Polygon for the arrow head
         	float xAH1 = targetNode.x + targetNode.connectionPointX; 
@@ -543,7 +592,6 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		 * 
 		 */	
     	protected void paint(Graphics2D graphics) {
-    		// TODO: Paint arrows
     		assert(curves != null);
     		for (CubicCurve2D curve : curves) {
     			assert(curve != null);
@@ -641,10 +689,47 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         	// Position the nodes
         	// TODO:Take care of padding here 
         	rootSkinNode.setOrigin(0, 0);
-        	// Lay out and position the connections
+        	
+        	// Do initial layout of connections, 
+        	// and build a list of connections to be sorted at the same time
+    		SkinConnection[] sortedConnections = new SkinConnection[connections.getLength()];
+    		int idx = 0;
         	for (SkinConnection conn : connections) {
-        		conn.layout();
+        		conn.initialLayout();
+        		sortedConnections[idx++] = conn;
         	}
+        	// Now we need to ensure that connections do not overlap
+        	if (connections.getLength() > 1) {
+	        	Arrays.sort(sortedConnections, CONNECTIONS_BYLENGTH);
+	        	
+	        	// Go through them in order and move the larger ones out of the way of the smaller ones
+	        	for (int i=0;i<sortedConnections.length-1;i++) {
+	        		// See if this connection overlaps with any others
+	        		SkinConnection sourceConnection = sortedConnections[i];
+	        		// Look for other overlapping connections
+		        	for (int j=i+1;j<sortedConnections.length;j++) {
+		        		SkinConnection otherConnection = sortedConnections[j];
+		        		if (sourceConnection.bounds.intersects(otherConnection.bounds) ) {
+		        			// sourceConnection and otherConnection intersects
+		        			// See if the larger needs to be moved out of the way of the smaller
+		        			if (Math.abs(sourceConnection.curveBottom - otherConnection.curveBottom) <= arrowHorzCorridorYMargin) {
+		        				otherConnection.curveBottom = sourceConnection.curveBottom + arrowHorzCorridorYMargin;
+		        				System.out.format("Moving connection from %s to %s to be below connection from %s to %s", 
+	        						sourceConnection.sourceNode.parseNode.text, 
+	        						sourceConnection.targetNode.parseNode.text, 
+	        						otherConnection.sourceNode.parseNode.text, 
+	        						otherConnection.targetNode.parseNode.text
+	        						);
+		        			}
+		        		}
+		        	}
+	        	}
+        	}
+        	// Now we can do the final layout
+        	for (SkinConnection conn : connections) {
+        		conn.finalizeLayout();
+        	}
+        	
         }
     }
 
