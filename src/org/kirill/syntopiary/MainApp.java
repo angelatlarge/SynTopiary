@@ -30,11 +30,17 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Example trees?
+ * TODO: Hat drawing
+ * TODO: I don't think we deal well with empty parenthesis
  * TODO: Error log in the status bar
+ * TODO: Support boxes and highlighting?
+ * TODO: Replace node data members to support x and y as a part of the bounding box?
+ * TODO: More efficient algorithm (line sweep?) for movement arrow intersection?
+ * TODO: Move efficient way of finding nodes between?
+ * TODO: Option to draw a ll children on the same level vertically aligned?
+ * TODO: Example trees?
  * TODO: Larger output?
  * TODO: Different font?
- * TODO: Hat drawing
  * TODO: Automatic empty parents for orphaned children
  * TODO: EPS copy
  * TODO: CGM file support?
