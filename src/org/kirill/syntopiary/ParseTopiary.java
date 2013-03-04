@@ -300,17 +300,19 @@ public class ParseTopiary {
 		}
 		
 		protected void getNodeTexts(TreeMap<String, LinkedList<ParseTopiaryNode>> map, boolean includeNamedNodes) {
-//			System.out.format("names.size()=%d\n",names.size()); 
-			if (names.size() == 0 || includeNamedNodes ) {
-				LinkedList<ParseTopiaryNode> ll = map.get(text);
-				if (ll == null) {
-					ll = new LinkedList<ParseTopiaryNode>();
-					map.put(text, ll);
+//			System.out.format("names.size()=%d\n",names.size());
+			if ( (text!=null) && !text.isEmpty() ) { 
+				if (names.size() == 0 || includeNamedNodes ) {
+					LinkedList<ParseTopiaryNode> ll = map.get(text);
+					if (ll == null) {
+						ll = new LinkedList<ParseTopiaryNode>();
+						map.put(text, ll);
+					}
+					ll.add(this);
 				}
-				ll.add(this);
-				for (ParseTopiaryNode c : children) {
-					c.getNodeTexts(map, includeNamedNodes);
-				}
+			}
+			for (ParseTopiaryNode c : children) {
+				c.getNodeTexts(map, includeNamedNodes);
 			}
 		}
 		

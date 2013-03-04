@@ -423,6 +423,7 @@ public class TestParseTopiary {
 	}	
 	
 	public static void main(String[] args) {
+		// TODO: Need to do testing of connections
 		testBasicParseNodes();
 		testDefaultNames();
 		testExplicitNames();
