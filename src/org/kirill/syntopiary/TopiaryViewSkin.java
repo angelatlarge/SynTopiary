@@ -74,14 +74,19 @@ import org.kirill.syntopiary.ParseTopiary.ParseTopiaryNode;
 
 
 public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListener, TopiaryViewListener {
-	private float nNodeXMargin = 4.0f;
-	private float nNodeYMargin = 2.0f;
-	private float minYNodeSpacing = 7.0f;
-	private float lineSlope = 0.125f;
-	private float arrowTopMargin = 10f;
-	private float arrowHeadWidth = 4.0f;
-	private float arrowHeadLength = 5.0f;
-    private float arrowHorzCorridorYMargin = 10.0f;
+	protected float nNodeXMargin = 4.0f;
+	protected float nNodeYMargin = 2.0f;
+	protected float minYNodeSpacing = 7.0f;
+	protected float lineSlope = 0.125f;
+	protected float arrowTopMargin = 10f;
+	protected float arrowHeadWidth = 4.0f;
+	protected float arrowHeadLength = 5.0f;
+	protected float arrowHorzCorridorYMargin = 10.0f;
+	protected float skinMarginBotton = 10f;
+	protected float skinMarginRight = 10f;
+	
+	protected float width = Float.NEGATIVE_INFINITY;
+	protected float height = Float.NEGATIVE_INFINITY;
 	
 	/** 
 	 * This class implements the graphical side of each tree node
@@ -451,7 +456,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     	/**
     	 * Two bezier curves for the arrow
     	 */
-    	Rectangle2D bounds = null;
+    	Rectangle2D.Float bounds = null;
     	/**
     	 * Two bezier curves for the arrow
     	 */
@@ -585,6 +590,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 //	        	((Path2D)arrowHead).lineTo(xAH1, yAH1);
 	        	((Path2D)arrowHead).closePath();
     		}
+			if (curveBottom > height) {
+				height = curveBottom;
+			}
+    		
     	}
     	
 		/** 
@@ -646,36 +655,48 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     
     @Override
     public int getPreferredWidth(int height) {
-    	System.out.print("getPreferredWidth\n");
+//    	System.out.print("getPreferredWidth\n");
         TopiaryView topiaryView = (TopiaryView)getComponent();
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        return (parseTopiary == null) ? 0 : 300;
+        if (parseTopiary != null) { 
+	        if (width == Float.NEGATIVE_INFINITY) {
+	        	layout();
+	        }
+	        return Math.round(width + skinMarginRight);
+        } else {
+        	return 0;
+        }
     }
 
     @Override
     public int getPreferredHeight(int width) {
-    	System.out.print("getPreferredHeight\n");
+//    	System.out.print("getPreferredHeight\n");
         TopiaryView topiaryView = (TopiaryView)getComponent();
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        return (parseTopiary == null) ? 0 : 300;
+        if (parseTopiary != null) { 
+	        if (height  == Float.NEGATIVE_INFINITY) {
+	        	layout();
+	        }
+	        return Math.round(height + skinMarginBotton);
+        } else {
+        	return 0;
+        }
     }
 
     @Override
     public Dimensions getPreferredSize() {
-    	System.out.print("getPreferredSize\n");
+//    	System.out.print("TopiaryViewSkin.getPreferredSize\n");
     	TopiaryView topiaryView = (TopiaryView)getComponent();
         ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
-        assert(parseTopiary != null);
-        return new Dimensions(300, 300);
-//        return (parseTopiary == null) ? new Dimensions(0, 0) : new Dimensions(300, 300);
+    	return new Dimensions(getPreferredWidth(0), getPreferredHeight(0));
     }
 
     @Override
     public int getBaseline(int width, int height) {
-    	System.out.print("getBaseline\n");
+//    	System.out.print("getBaseline\n");
 //        TopiaryView topiaryView = (TopiaryView)getComponent();
 //        ParseTopiary parseTopiary = topiaryView.getParseTopiary();
 
@@ -687,6 +708,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
     @Override
     public void layout() {
+//    	System.out.print("TopiaryViewSkin.layout\n");
         buildNodes();
         if (rootSkinNode != null) {
         	// Lay out the nodes
@@ -694,6 +716,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         	// Position the nodes
         	// TODO:Take care of padding here 
         	rootSkinNode.setOrigin(0, 0);
+        	
+        	// Save the size
+        	width = rootSkinNode.fullWidth; 
+        	height = rootSkinNode.fullHeight; 
         	
         	// Do initial layout of connections, 
         	// and build a list of connections to be sorted at the same time
@@ -719,12 +745,18 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		        			// See if the larger needs to be moved out of the way of the smaller
 		        			if (Math.abs(sourceConnection.curveBottom - otherConnection.curveBottom) <= arrowHorzCorridorYMargin) {
 		        				otherConnection.curveBottom = sourceConnection.curveBottom + arrowHorzCorridorYMargin;
-		        				System.out.format("Moving connection from %s to %s to be below connection from %s to %s", 
-	        						sourceConnection.sourceNode.parseNode.text, 
-	        						sourceConnection.targetNode.parseNode.text, 
-	        						otherConnection.sourceNode.parseNode.text, 
-	        						otherConnection.targetNode.parseNode.text
-	        						);
+		        				otherConnection.bounds.setRect(     						
+    								otherConnection.bounds.getX(), 
+    								otherConnection.bounds.getY(), 
+    								otherConnection.bounds.getWidth(),  
+    								otherConnection.curveBottom - otherConnection.bounds.getY()
+    								);
+//		        				System.out.format("Moving connection from %s to %s to be below connection from %s to %s", 
+//	        						sourceConnection.sourceNode.parseNode.text, 
+//	        						sourceConnection.targetNode.parseNode.text, 
+//	        						otherConnection.sourceNode.parseNode.text, 
+//	        						otherConnection.targetNode.parseNode.text
+//	        						);
 		        			}
 		        		}
 		        	}
@@ -756,6 +788,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     }
     protected void reBuildNodes() {
     	rootSkinNode = null;
+    	connections = null;
+    	width = Float.NEGATIVE_INFINITY;
+    	height = Float.NEGATIVE_INFINITY;
     	buildNodes();
     }
     

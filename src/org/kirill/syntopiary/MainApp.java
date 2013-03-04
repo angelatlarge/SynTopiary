@@ -30,10 +30,9 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Examples?
- * TODO: Horizontal corridors for the connectors
- * TODO: Scrollbox for the tree view
- * TODO: Larger display?
+ * TODO: Example trees?
+ * TODO: Error log in the status bar
+ * TODO: Larger output?
  * TODO: Different font?
  * TODO: Hat drawing
  * TODO: Automatic empty parents for orphaned children
@@ -42,7 +41,9 @@ import org.apache.pivot.wtk.Theme;
  * TODO: Copy and paste text in the tree specification
  * TODO: EMF copy
  * TODO: EMF paste
+ * TODO: Support for cutting and pasting back into the app
  * TODO: Text formatting
+ * TODO: Test connections and automatic names
  * TODO: Caret cursor for the text box
  * TODO: Non-vector file export?
  * 

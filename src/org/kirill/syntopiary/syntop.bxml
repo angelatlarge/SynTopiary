@@ -18,7 +18,11 @@
 			</TablePane.Row>
 -->			
 			<TablePane.Row height="1*">
-			<syntopiary:TopiaryView bxml:id="mainView"/>
+				<ScrollPane horizontalScrollBarPolicy="fill_to_capacity"
+					verticalScrollBarPolicy="fill_to_capacity"
+					preferredHeight="240">	
+						<syntopiary:TopiaryView bxml:id="mainView"/>
+				</ScrollPane>
 			</TablePane.Row>
 			
 			
