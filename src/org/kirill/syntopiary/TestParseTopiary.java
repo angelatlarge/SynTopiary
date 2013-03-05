@@ -422,6 +422,29 @@ public class TestParseTopiary {
 		System.out.print("passed\n");
 	}	
 	
+	@Test public static void testIsMultiword() {
+		System.out.print("Testing isMultiWord...");
+		ParseTopiary pt;
+		Iterator<ParseTopiaryNode> itNodes;
+		ParseTopiaryNode n1, n2, n3, n4;
+		int nComparison;
+
+		pt = new ParseTopiary("Root");
+		assertFalse(pt.root.isMultiWord());
+		
+		pt = new ParseTopiary("Root Root");
+		assertTrue(pt.root.isMultiWord());
+		
+		pt = new ParseTopiary("Root ");
+		assertFalse(pt.root.isMultiWord());
+		
+		pt = new ParseTopiary(" Root ");
+		assertFalse(pt.root.isMultiWord());
+		
+		pt = new ParseTopiary("Root-Root");
+		assertFalse(pt.root.isMultiWord());
+	}
+	
 	public static void main(String[] args) {
 		// TODO: Need to do testing of connections
 		testBasicParseNodes();
@@ -433,6 +456,7 @@ public class TestParseTopiary {
 		testNodeByName();
 		testCompareChildren();
 		testCompareTo();
+		testIsMultiword();
 //		testParseOptions();
     }    
 

@@ -100,6 +100,7 @@ public class ParseTopiary {
 		protected ArrayList<ParseTopiaryConnection> targets = new ArrayList<ParseTopiaryConnection>();
 		protected ParseTopiaryNode parent = null;
 		protected int level = -1; 		// Level of the node, will be memoized;
+		protected int isMultiWord = -1;	// Is this a multi-word node, will be memoized
 
 		/* Node parser clas
 		 * 
@@ -458,6 +459,23 @@ public class ParseTopiary {
 			} while (!nodeParent.equals(parentCurrent));
 			return returnValue;
 		}
+		
+		public boolean isMultiWord() {
+			if (isMultiWord == -1) {
+				// Need to compute whether this node is multi-word
+				isMultiWord = 0;
+				// Search for all whitespace characters
+				String strWhitespace = " \t\n\r";
+				for (int i=0;i<strWhitespace.length();i++) {
+					if (text.indexOf(strWhitespace.charAt(i)) > -1) {
+						isMultiWord = 1;
+						break;
+					}
+				}
+			}
+			return isMultiWord>0;
+		}
+		
 		
 	} // end of ParseTopiaryNode
 
