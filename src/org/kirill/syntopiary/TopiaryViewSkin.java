@@ -90,6 +90,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	protected float width = Float.NEGATIVE_INFINITY;
 	protected float height = Float.NEGATIVE_INFINITY;
 	
+	protected boolean layedOut = false;
 	/** 
 	 * This class implements the graphical side of each tree node
 	 */
@@ -110,7 +111,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         private float fullWidth = 0;			// Width of this node + children
         private float fullHeight = 0;			// Height of this node + children
         
-        private float leftPadding = 0;			// Padding from the left; positive value: pad self, negative value = pad children
+        private float leftNodePadding = 0;		// Padding from the left; positive value: pad self, negative value = pad children
+        private float leftTextMargin = 0;		// Padding for this node's text
 
 		private float connectionPointX = 0;		// X position of the connection point (above and below)
 		private float childXSpacing = 0;		// Extra spacing between children 
@@ -172,9 +174,26 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             }
             nodeBoxWidth = nodeTextWidth + nNodeXMargin * 2;
             nodeBoxHeight = nodeTextHeight;
-            if (nTextLength>0) 
+            if (nTextLength>0) {
             	nodeBoxHeight += nNodeYMargin * 2;
-            
+            }
+
+            // Adjust for hats, part one
+            leftTextMargin = 0; 
+            drawHat = (automaticHats && parseNode.isMultiWord()) || parseNode.getHatRequested();
+            drawHat = drawHat && parseNode.getParent().childrenCount() == 1;
+            if (drawHat) {
+				if (nodeBoxWidth < minHatNodeWidth) {
+					float nAdjustWidth = minHatNodeWidth - nodeBoxWidth;
+					nodeBoxWidth += nAdjustWidth;
+					leftTextMargin += nAdjustWidth/2;
+					System.out.format("Have hat adjusted by %f\n", nAdjustWidth);
+				} else {
+					// Nothing needs to be done
+					System.out.format("Have hat nothing to do\n");
+				}
+            }
+            		
 			// Calculate the layout w.r.t. children
 			if (children.size() > 1) {
 				// At least two children
@@ -208,54 +227,28 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	            	}
 					connectionPointX = connectMiddle;
 				}
-				leftPadding = (connectionPointX - (nodeBoxWidth/2));
+				leftNodePadding = (connectionPointX - (nodeBoxWidth/2));
 			} else if (children.size() == 1) {
 				// One child
-
 				SkinNode childNode = children.get(0);
-				
-				// Initial values
 				connectionPointX = childNode.connectionPointX;
-				leftPadding = (connectionPointX - (nodeBoxWidth/2));
+				leftNodePadding = (connectionPointX - (nodeBoxWidth/2));
 				connectHeight = minYNodeSpacing;
-				
-				// Check for hats
-				assert(childNode != null);
-				if (	(automaticHats && childNode.parseNode.isMultiWord())
-					||
-						(childNode.parseNode.getHatRequested()) 		) {
-					// Draw a hat for this node
-					childNode.drawHat = true;
-					if (childrenWidth < minHatNodeWidth) {
-						float nWidthDiff = minHatNodeWidth - childrenWidth;
-						childNode.nodeBoxWidth += nWidthDiff;
-						childNode.fullWidth += nWidthDiff;
-						childNode.leftPadding -= nWidthDiff/2;
-						childNode.connectionPointX += nWidthDiff/2;
-						leftPadding -= nWidthDiff;
- 						childrenWidth = minHatNodeWidth;
-						connectionPointX = childNode.connectionPointX;
-						leftPadding = (connectionPointX - (nodeBoxWidth/2));
-						connectHeight = minYNodeSpacing;
-					} else {
-						// Child node is wide enough. Nothing to do
-					}
-				} else {
-					// No hat. Nothing to do
-				}
 			} else {
 				// No children
 				connectionPointX = nodeBoxWidth/2;
-				leftPadding = 0;
+				leftNodePadding = 0;
 				connectHeight = 0;
 			}
+
             fullWidth = 
-            	Math.max(
-            		(leftPadding>0)?nodeBoxWidth+leftPadding:nodeBoxWidth, 
-            		(leftPadding<0)?childrenWidth-leftPadding:childrenWidth);		
+                	Math.max(
+                		(leftNodePadding>0)?nodeBoxWidth+leftNodePadding:nodeBoxWidth, 
+                		(leftNodePadding<0)?childrenWidth-leftNodePadding:childrenWidth);		
             fullHeight = nodeBoxHeight + connectHeight + childrenHeight;
-			connectionPointX = ((leftPadding>0)?leftPadding:0)+nodeBoxWidth/2;
-            
+            // TODO: This is redundant
+			connectionPointX = ((leftNodePadding>0)?leftNodePadding:0)+nodeBoxWidth/2;
+			
         }
     	
 		/** 
@@ -284,7 +277,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	    protected void setOrigin(float oX, float oY) {
 	    	x = oX;
 	    	y = oY;
-	        float nChildStartX = x + ((leftPadding<0)?-leftPadding:0);
+	        float nChildStartX = x + ((leftNodePadding<0)?-leftNodePadding:0);
 			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
             	childNode.setOrigin(nChildStartX, nChildrenStartY);
@@ -328,13 +321,13 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.GREEN);
-            	graphics.drawRect((int)(x + ((leftPadding>0)?leftPadding:0) ), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
+            	graphics.drawRect((int)(x + ((leftNodePadding>0)?leftNodePadding:0) ), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
             }
             if (topiaryView.getDrawTextBoundaries()) {
             	final BasicStroke strokeBox = new BasicStroke(1.0f);
             	graphics.setStroke(strokeBox);
             	graphics.setColor(Color.RED);
-            	graphics.drawRect((int)(x + nNodeXMargin + ((leftPadding>0)?leftPadding:0)), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
+            	graphics.drawRect((int)(x + nNodeXMargin + ((leftNodePadding>0)?leftNodePadding:0) + leftTextMargin), (int)(y + nNodeYMargin), (int)(nodeTextWidth), (int)nodeTextHeight);
             }
             if (topiaryView.getDrawConnectionPoints()) {
             	// Draw connection point Xs
@@ -368,11 +361,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	                    // Work-around for printing problem in applets, 
 	                	// and LEPSGraphics2D does not know about GlyphVectors
 	                    if (text != null && text.length() > 0) {
-	                        graphics.drawString(text, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
+	                        graphics.drawString(text, x + nNodeXMargin + ((leftNodePadding>0)?leftNodePadding:0) + leftTextMargin, nLineY + ascent);
 	                    }
 	                }
 	                else {
-	                	graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + ((leftPadding>0)?leftPadding:0), nLineY + ascent);
+	                	graphics.drawGlyphVector(glyphVector, x + nNodeXMargin + ((leftNodePadding>0)?leftNodePadding:0) + leftTextMargin, nLineY + ascent);
 	                }
 
 	                nLineY += textBounds.getHeight();
@@ -381,15 +374,24 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	        }
 	        
             // Paint out the children
-	        float nChildStartX = x + ((leftPadding<0)?-leftPadding:0);
+	        float nChildStartX = x + ((leftNodePadding<0)?-leftNodePadding:0);
 			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
             	// Paint the connection
             	if (childNode.drawHat) {
             		// Draw a hat
-            		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX), (int)nChildrenStartY);
-            		graphics.drawLine((int)(nChildStartX), (int)nChildrenStartY, (int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY);
-            		graphics.drawLine((int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY, (int)(connectionPointX+x), (int)(y+nodeBoxHeight));
+            		float hatLeftX = (int)(childNode.x + ((childNode.leftNodePadding>0)?leftNodePadding:0)); 
+            		float hatRightX = hatLeftX + childNode.nodeBoxWidth; 
+            		System.out.format("Painting a hat to %f %f\n", hatLeftX, hatRightX);
+            		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), Math.round(hatLeftX), (int)nChildrenStartY);
+            		graphics.drawLine(Math.round(hatLeftX), (int)nChildrenStartY, Math.round(hatRightX), (int)nChildrenStartY);
+            		graphics.drawLine(Math.round(hatRightX), (int)nChildrenStartY, (int)(connectionPointX+x), (int)(y+nodeBoxHeight));
+            		
+            				 
+//                	graphics.drawRect((int)(x + ((leftNodePadding>0)?leftNodePadding:0) ), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
+//            		
+//            		graphics.drawLine((int)(nChildStartX), (int)nChildrenStartY, (int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY);
+//            		graphics.drawLine((int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY, (int)(connectionPointX+x), (int)(y+nodeBoxHeight));
             	} else {
             		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
             	}
@@ -807,6 +809,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         	}
         	
         }
+        layedOut = true;
     }
 
     protected void buildNodes() {
@@ -826,6 +829,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         }
     }
     protected void reBuildNodes() {
+    	layedOut = false;
     	rootSkinNode = null;
     	connections = null;
     	width = Float.NEGATIVE_INFINITY;
@@ -889,6 +893,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	@Override
 	public void parseTopiaryChanged(ParseTopiary parseTopiary) {
 //		System.out.format("Received change notification: new string is %s...\n", parseTopiary.getParseString());
+		layedOut = false;
 		reBuildNodes();
         invalidateComponent();
 	}
@@ -899,6 +904,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
     
 	public void topiaryViewLayoutOptionsChanged(TopiaryView topiaryView) {
 //    	System.out.print("TopiaryViewSkin.topiaryViewLayoutOptionsChanged()\n");
+		layedOut = false;
         invalidateComponent();
 	}
 	
@@ -951,6 +957,11 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         Writer writerOut = null;
         OutputStream streamOut = null;
     	try {
+    		// If we are not layed out we need to be
+    		if (!layedOut) {
+    			layout();
+    		}
+    		
             // Paint onto the generator
             this.paint(thunk.getGraphics2D());
 
@@ -1044,6 +1055,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
         
     }
     
-    
+    public boolean getLayedOut() {
+    	return 	layedOut;
+    }
+
 
 }

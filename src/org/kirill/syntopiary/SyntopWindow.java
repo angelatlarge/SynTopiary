@@ -152,10 +152,20 @@ public class SyntopWindow extends Window implements Bindable {
     	treeTextArea.getSyntopTextAreaListeners().add(treeTextAreaEventSync);
     }
 
+    public void setTreeSpecificationText(String treeSpecification) {
+    	assert(treeSpecification!=null);
+    	treeTextArea.setText(treeSpecification);
+//    	mainView.getParseTopiary().setParseString(treeSpecification);
+    }
+    
     public void applyTreeSpecificationText() {
     	String s = treeTextArea.getText();
-//    	String s = treeTextInput.getText();
     	mainView.getParseTopiary().setParseString(s);
+    }
+    
+    public void makeSVGfile(String filename) {
+        File file = new java.io.File(filename);
+        mainView.generateSVG(file);
     }
     
     public void applyDebugOptionsChanged() {
@@ -197,7 +207,6 @@ public class SyntopWindow extends Window implements Bindable {
         int returnVal = fc.showSaveDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
-            //This is where a real application would open the file.
             mainView.generateEPS(file);
         } else {
         	// Open command cancelled by user

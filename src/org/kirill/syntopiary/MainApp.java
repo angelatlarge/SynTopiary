@@ -68,7 +68,26 @@ public class MainApp implements Application {
         BXMLSerializer bxmlSerializer = new BXMLSerializer();
         window = (SyntopWindow)bxmlSerializer.readObject(MainApp.class, "syntop.bxml");
         window.open(display);
+        
+        // See if a tree string has been specified
+        String treeSpecification = properties.get("treespec");
+        if (treeSpecification != null) {
+        	window.setTreeSpecificationText(treeSpecification);
+        }
+        
         window.applyTreeSpecificationText();
+        
+        // See if an output file has been specified
+        String outputSVGfile = properties.get("svgfile");
+        if (outputSVGfile != null) {
+        	window.makeSVGfile(outputSVGfile);
+        }
+        
+        // See if quitting has been specified
+        if (properties.containsKey("terminate")) {
+            shutdown(false);
+        }
+
     }
  
     @Override

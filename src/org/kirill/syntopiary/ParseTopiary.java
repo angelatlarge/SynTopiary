@@ -487,7 +487,10 @@ public class ParseTopiary {
 		public boolean getHatRequested() {
 			return hatRequested;
 		}
-		
+	
+		public int childrenCount() {
+			return children.size();
+		}
 	} // end of ParseTopiaryNode
 
 	protected void doParse(StringBuilder src) {
