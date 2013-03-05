@@ -29,15 +29,15 @@ public class TestTopiaryView {
 	
 	protected void testLayoutSimple() throws InterruptedException {
 
-		htmlOutput.append(String.format("<H1>Simple Layout</H1>"));
+		htmlOutput.append(String.format("<H1>Simple Layout</H1>\n"));
 		
-		// Parent node larger than child node
+		htmlOutput.append(String.format("<H2>Parent node larger than child node</H2>\n"));
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B)");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B(C))");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B(C, D))");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B(C, D, E))");
 		
-		// Child node larger than parent node
+		htmlOutput.append(String.format("<H2>Child node larger than parent node</H2>\n"));
 		makeTreeImage("A(BBBBBBBBBBBBBB)");
 		makeTreeImage("A(BBBBBBBBBBBBBB(C))");
 		makeTreeImage("A(BBBBBBBBBBBBBB(C, D))");
@@ -50,28 +50,42 @@ public class TestTopiaryView {
 		
 		htmlOutput.append(String.format("<H1>Hats</H1>"));
 		
-		// Parent node larger than child node: child node less than minimum
+		htmlOutput.append(String.format("<H2>Parent node larger than child node: child node less than minimum</H2>\n"));
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat])");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat](C))");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat](C, D))");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat](C, D, E))");
 		
-		// Child node larger than parent node
+		htmlOutput.append(String.format("<H2>Child node larger than parent node</H2>\n"));
 		makeTreeImage("A(BBBBBBBBBBBBBB[hat])");
 		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C))");
 		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C, D))");
 		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C, D, E))");
 		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C, D(FFFF), E))");
 		
-		// Parent node larger, hat not larger than minimum
+		htmlOutput.append(String.format("<H2>Parent node larger, hat not larger than minimum</H2>\n"));
 		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat])");
 		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C))");
 		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C, D))");
 		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C, D, E))");
 		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C, D(FFFF), E))");
 		
+		htmlOutput.append(String.format("<H2>real tree?</H2>\n"));
+		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(CP(C, TP(DP, (T, VP(V, DP(...[hat]");		
 	}
 	
+	protected void testAutoHats() throws InterruptedException {
+		
+		htmlOutput.append(String.format("<H1>Automatic Hats</H1>"));
+		
+//		htmlOutput.append(String.format("<H2>Parent node larger than child node: child node less than minimum</H2>\n"));
+		makeTreeImage("Root(test node");
+		makeTreeImage("Root(test node(sub test node");
+		makeTreeImage("Root(test node 1, test node 2");
+		makeTreeImage("Root(test node 1, test node 2(test node 3)");
+		
+		
+	}
 	
 	public void testAll() throws InterruptedException, IOException {
 		htmlOutput.append("<html>\n<body>\n");

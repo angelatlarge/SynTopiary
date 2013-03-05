@@ -38,6 +38,7 @@ public class TopiaryView extends Component {
 	private boolean fDrawNodeBoundaries = false;
 	private boolean fDrawFullBoundaries = false;
 	private boolean fDrawConnectionPoints = false;
+	private boolean fDrawAutomaticHats = false;
 
     private ParseTopiary parseTopiary;
 	
@@ -106,6 +107,12 @@ public class TopiaryView extends Component {
     	fDrawConnectionPoints = newValue;
     	topiaryViewListeners.topiaryViewCosmeticOptionsChanged(this);
     }
+    public boolean getDrawAutomaticHats() { return fDrawAutomaticHats; }
+    public void setDrawAutomaticHats(boolean newValue) { 
+    	fDrawAutomaticHats = newValue;
+    	topiaryViewListeners.topiaryViewLayoutOptionsChanged(this); // Hats may affect layout, as they have a minimum node width
+    }
+        
     public void generateSVG( File file ) {
     	topiaryViewListeners.topiaryViewOutputRequestSVG(this, file);
     }

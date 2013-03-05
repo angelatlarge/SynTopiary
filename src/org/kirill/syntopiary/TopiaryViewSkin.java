@@ -85,7 +85,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	protected float skinMarginBotton = 10f;
 	protected float skinMarginRight = 10f;
 	protected float minHatNodeWidth = 20f;
-	protected boolean automaticHats = false;
+	protected boolean drawAutomaticHats = false;
 	
 	protected float width = Float.NEGATIVE_INFINITY;
 	protected float height = Float.NEGATIVE_INFINITY;
@@ -180,17 +180,15 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
             // Adjust for hats, part one
             leftTextMargin = 0; 
-            drawHat = (automaticHats && parseNode.isMultiWord()) || parseNode.getHatRequested();
+            drawHat = (drawAutomaticHats && parseNode.isMultiWord()) || parseNode.getHatRequested();
             drawHat = drawHat && parseNode.getParent().childrenCount() == 1;
             if (drawHat) {
 				if (nodeBoxWidth < minHatNodeWidth) {
 					float nAdjustWidth = minHatNodeWidth - nodeBoxWidth;
 					nodeBoxWidth += nAdjustWidth;
 					leftTextMargin += nAdjustWidth/2;
-					System.out.format("Have hat adjusted by %f\n", nAdjustWidth);
 				} else {
 					// Nothing needs to be done
-					System.out.format("Have hat nothing to do\n");
 				}
             }
             		
@@ -382,16 +380,9 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             		// Draw a hat
             		float hatLeftX = (int)(childNode.x + ((childNode.leftNodePadding>0)?childNode.leftNodePadding:0)); 
             		float hatRightX = hatLeftX + childNode.nodeBoxWidth; 
-            		System.out.format("Painting a hat to %f %f\n", hatLeftX, hatRightX);
             		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), Math.round(hatLeftX), (int)nChildrenStartY);
             		graphics.drawLine(Math.round(hatLeftX), (int)nChildrenStartY, Math.round(hatRightX), (int)nChildrenStartY);
             		graphics.drawLine(Math.round(hatRightX), (int)nChildrenStartY, (int)(connectionPointX+x), (int)(y+nodeBoxHeight));
-            		
-            				 
-//                	graphics.drawRect((int)(x + ((leftNodePadding>0)?leftNodePadding:0) ), (int)y, (int)(nodeBoxWidth), (int)nodeBoxHeight);
-//            		
-//            		graphics.drawLine((int)(nChildStartX), (int)nChildrenStartY, (int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY);
-//            		graphics.drawLine((int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY, (int)(connectionPointX+x), (int)(y+nodeBoxHeight));
             	} else {
             		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
             	}
@@ -749,8 +740,10 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 
     @Override
     public void layout() {
-//    	System.out.print("TopiaryViewSkin.layout\n");
+        TopiaryView topiaryView = (TopiaryView)getComponent();
         buildNodes();
+        drawAutomaticHats = topiaryView.getDrawAutomaticHats(); // Cache the value locally
+        		
         if (rootSkinNode != null) {
         	// Lay out the nodes
         	rootSkinNode.layout();

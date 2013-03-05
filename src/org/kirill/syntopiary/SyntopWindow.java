@@ -75,6 +75,7 @@ public class SyntopWindow extends Window implements Bindable {
 //	@BXML private TextInput treeTextInput = null;
 	@BXML private TopiaryView mainView = null;
 	@BXML private PushButton btnParse = null;
+	@BXML private Checkbox chkAutomaticHats = null;
 	@BXML private Checkbox chkDebugDrawBoxText = null;
 	@BXML private Checkbox chkDebugDrawBoxNode = null;
 	@BXML private Checkbox chkDebugDrawBoxFull = null;
@@ -93,11 +94,18 @@ public class SyntopWindow extends Window implements Bindable {
         	applyTreeSpecificationText();
         }
 	};
+	
+	private Action debugOptionsChangedAction = new Action(true) {
+		@Override
+		public void perform(Component source) {
+			applyDebugOptionsChanged();
+		}
+	};    
 
-    private Action debugOptionsChangedAction = new Action(true) {
+    private Action automaticHatsChangedAction = new Action(true) {
         @Override
         public void perform(Component source) {
-        	applyDebugOptionsChanged();
+        	applyAutomaticHatsOptionChanged();
         }
     };    
         
@@ -146,6 +154,7 @@ public class SyntopWindow extends Window implements Bindable {
 */    	
         // Assign actions to add and remove symbol buttons
     	btnParse.setAction(applyTreeSpecificationTextAction);
+    	if (chkAutomaticHats != null) chkAutomaticHats.setAction(automaticHatsChangedAction);
     	if (chkDebugDrawBoxText != null) chkDebugDrawBoxText.setAction(debugOptionsChangedAction);
     	if (chkDebugDrawBoxNode != null) chkDebugDrawBoxNode.setAction(debugOptionsChangedAction);
     	if (chkDebugDrawBoxFull != null) chkDebugDrawBoxFull.setAction(debugOptionsChangedAction);
@@ -169,14 +178,18 @@ public class SyntopWindow extends Window implements Bindable {
     }
     
     public void applyDebugOptionsChanged() {
-    	// TODO: Write the code here
-        System.out.print("Debug options changed\n");
-        if (chkDebugDrawBoxText != null) 
-        	mainView.setDrawTextBoundaries(chkDebugDrawBoxText.isSelected());
-        if (chkDebugDrawBoxText != null) 
-        	mainView.setDrawNodeBoundaries(chkDebugDrawBoxNode.isSelected());
-        if (chkDebugDrawBoxFull != null) 
-        	mainView.setDrawFullBoundaries(chkDebugDrawBoxFull.isSelected());
+    	if (chkDebugDrawBoxText != null) 
+    		mainView.setDrawTextBoundaries(chkDebugDrawBoxText.isSelected());
+    	if (chkDebugDrawBoxText != null) 
+    		mainView.setDrawNodeBoundaries(chkDebugDrawBoxNode.isSelected());
+    	if (chkDebugDrawBoxFull != null) 
+    		mainView.setDrawFullBoundaries(chkDebugDrawBoxFull.isSelected());
+    }
+    
+    // TODO: Change name of these methods, it is a bit confusing now
+    public void applyAutomaticHatsOptionChanged() {
+        if (chkAutomaticHats != null) 
+        	mainView.setDrawAutomaticHats(chkAutomaticHats.isSelected());
     }
     
     public void generateSVGoutput() {

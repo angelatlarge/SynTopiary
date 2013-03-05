@@ -30,7 +30,7 @@ import org.apache.pivot.wtk.Window;
 import org.apache.pivot.wtk.Theme;
 
 /*
- * TODO: Hat drawing
+ * TODO: SVG file output is too large
  * TODO: I don't think we deal well with empty parenthesis
  * TODO: Error log in the status bar
  * TODO: Support boxes and highlighting?

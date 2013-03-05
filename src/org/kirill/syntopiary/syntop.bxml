@@ -72,6 +72,7 @@
 									</Menu.Section>
 								</Menu>
 							</MenuButton>
+				<Checkbox bxml:id="chkAutomaticHats" buttonData="Hats"/>
 				<Checkbox bxml:id="chkDebugDrawBoxText" buttonData="Box:Text"/>
 				<Checkbox bxml:id="chkDebugDrawBoxNode" buttonData="Box:Node"/>
 				<Checkbox bxml:id="chkDebugDrawBoxFull" buttonData="Box:Full"/>
