@@ -101,6 +101,7 @@ public class ParseTopiary {
 		protected ParseTopiaryNode parent = null;
 		protected int level = -1; 		// Level of the node, will be memoized;
 		protected int isMultiWord = -1;	// Is this a multi-word node, will be memoized
+		protected boolean hatRequested = false;
 
 		/* Node parser clas
 		 * 
@@ -162,7 +163,14 @@ public class ParseTopiary {
 							}
 						}
 					} else {
-						// TODO: Do something useful here
+						// Name is null, the token has the entire option
+						if (strNewToken.equalsIgnoreCase("hat")) {
+							// Requesting a hat
+							hatRequested = true;
+						} else {
+							// Unknown option specification
+							// TODO: Log the error
+						}
 					}
 					strOptionName = null;
 					break;
@@ -476,6 +484,9 @@ public class ParseTopiary {
 			return isMultiWord>0;
 		}
 		
+		public boolean getHatRequested() {
+			return hatRequested;
+		}
 		
 	} // end of ParseTopiaryNode
 
