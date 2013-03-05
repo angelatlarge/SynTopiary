@@ -84,6 +84,8 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 	protected float arrowHorzCorridorYMargin = 10.0f;
 	protected float skinMarginBotton = 10f;
 	protected float skinMarginRight = 10f;
+	protected float minHatNodeWidth = 20f;
+	protected boolean automaticHats = false;
 	
 	protected float width = Float.NEGATIVE_INFINITY;
 	protected float height = Float.NEGATIVE_INFINITY;
@@ -120,6 +122,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 		private float y = Float.NEGATIVE_INFINITY;	// Top side of this component (w.r.t. to the paint canvas)
 													// NEGATIVE_INFINITY is a sentinel value indicating that y is not valid 
 		
+		protected boolean drawHat = false;
 		/** 
 		 * List of children node of this node
 		 */	
@@ -208,9 +211,38 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 				leftPadding = (connectionPointX - (nodeBoxWidth/2));
 			} else if (children.size() == 1) {
 				// One child
-				connectHeight = minYNodeSpacing;
-				connectionPointX = children.get(0).connectionPointX;
+
+				SkinNode childNode = children.get(0);
+				
+				// Initial values
+				connectionPointX = childNode.connectionPointX;
 				leftPadding = (connectionPointX - (nodeBoxWidth/2));
+				connectHeight = minYNodeSpacing;
+				
+				// Check for hats
+				assert(childNode != null);
+				if (	(automaticHats && childNode.parseNode.isMultiWord())
+					||
+						(childNode.parseNode.getHatRequested()) 		) {
+					// Draw a hat for this node
+					childNode.drawHat = true;
+					if (childrenWidth < minHatNodeWidth) {
+						float nWidthDiff = minHatNodeWidth - childrenWidth;
+						childNode.nodeBoxWidth += nWidthDiff;
+						childNode.fullWidth += nWidthDiff;
+						childNode.leftPadding -= nWidthDiff/2;
+						childNode.connectionPointX += nWidthDiff/2;
+						leftPadding -= nWidthDiff;
+ 						childrenWidth = minHatNodeWidth;
+						connectionPointX = childNode.connectionPointX;
+						leftPadding = (connectionPointX - (nodeBoxWidth/2));
+						connectHeight = minYNodeSpacing;
+					} else {
+						// Child node is wide enough. Nothing to do
+					}
+				} else {
+					// No hat. Nothing to do
+				}
 			} else {
 				// No children
 				connectionPointX = nodeBoxWidth/2;
@@ -353,7 +385,14 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
 			float nChildrenStartY = y+nodeBoxHeight + connectHeight;
             for (SkinNode childNode : children) {
             	// Paint the connection
-            	graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
+            	if (childNode.drawHat) {
+            		// Draw a hat
+            		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX), (int)nChildrenStartY);
+            		graphics.drawLine((int)(nChildStartX), (int)nChildrenStartY, (int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY);
+            		graphics.drawLine((int)(nChildStartX+childNode.nodeBoxWidth), (int)nChildrenStartY, (int)(connectionPointX+x), (int)(y+nodeBoxHeight));
+            	} else {
+            		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), (int)(nChildStartX+childNode.connectionPointX), (int)nChildrenStartY);
+            	}
 				
 				// Paint the child
             	childNode.paint(graphics);
