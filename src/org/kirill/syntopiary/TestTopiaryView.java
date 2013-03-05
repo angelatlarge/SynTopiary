@@ -22,16 +22,53 @@ public class TestTopiaryView {
 		MainApp.main(args);
 		htmlOutput.append(String.format("<P>%s\n", specification));
 		htmlOutput.append(String.format("<BR><IMG SRC=\"%s\" style=\"border: 1px solid red\">\n", fileSpec));
-		Thread.sleep(1000);
+		Thread.sleep(100);
+//		Thread.sleep(250);
 	}
 	
 	
 	protected void testLayoutSimple() throws InterruptedException {
+
+		htmlOutput.append(String.format("<H1>Simple Layout</H1>"));
 		
 		// Parent node larger than child node
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B)");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B(C))");
 		makeTreeImage("AAAAAAAAAAAAAAAAA(B(C, D))");
+		makeTreeImage("AAAAAAAAAAAAAAAAA(B(C, D, E))");
+		
+		// Child node larger than parent node
+		makeTreeImage("A(BBBBBBBBBBBBBB)");
+		makeTreeImage("A(BBBBBBBBBBBBBB(C))");
+		makeTreeImage("A(BBBBBBBBBBBBBB(C, D))");
+		makeTreeImage("A(BBBBBBBBBBBBBB(C, D, E))");
+		makeTreeImage("A(BBBBBBBBBBBBBB(C, D(FFFF), E))");
+		
+	}
+	
+	protected void testLayoutHats() throws InterruptedException {
+		
+		htmlOutput.append(String.format("<H1>Hats</H1>"));
+		
+		// Parent node larger than child node: child node less than minimum
+		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat])");
+		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat](C))");
+		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat](C, D))");
+		makeTreeImage("AAAAAAAAAAAAAAAAA(B[hat](C, D, E))");
+		
+		// Child node larger than parent node
+		makeTreeImage("A(BBBBBBBBBBBBBB[hat])");
+		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C))");
+		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C, D))");
+		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C, D, E))");
+		makeTreeImage("A(BBBBBBBBBBBBBB[hat](C, D(FFFF), E))");
+		
+		// Parent node larger, hat not larger than minimum
+		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat])");
+		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C))");
+		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C, D))");
+		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C, D, E))");
+		makeTreeImage("AAAAAAAAAAAAAAAAAAAAAAAAA(BBBBBBBBBBBBBB[hat](C, D(FFFF), E))");
 		
 	}
 	
@@ -40,6 +77,7 @@ public class TestTopiaryView {
 		htmlOutput.append("<html>\n<body>\n");
 		try	{
 			testLayoutSimple();
+			testLayoutHats();
 			htmlOutput.append("</body>\n<html>\n");
 		} finally {
 			// Make an HTML output file

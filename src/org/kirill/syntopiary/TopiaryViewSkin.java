@@ -380,7 +380,7 @@ public class TopiaryViewSkin extends ComponentSkin implements ParseTopiaryListen
             	// Paint the connection
             	if (childNode.drawHat) {
             		// Draw a hat
-            		float hatLeftX = (int)(childNode.x + ((childNode.leftNodePadding>0)?leftNodePadding:0)); 
+            		float hatLeftX = (int)(childNode.x + ((childNode.leftNodePadding>0)?childNode.leftNodePadding:0)); 
             		float hatRightX = hatLeftX + childNode.nodeBoxWidth; 
             		System.out.format("Painting a hat to %f %f\n", hatLeftX, hatRightX);
             		graphics.drawLine((int)(connectionPointX+x), (int)(y+nodeBoxHeight), Math.round(hatLeftX), (int)nChildrenStartY);
